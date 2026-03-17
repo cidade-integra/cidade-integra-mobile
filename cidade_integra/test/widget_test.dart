@@ -1,11 +1,9 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
 import 'package:cidade_integra/main.dart';
 
 void main() {
-  testWidgets('App renders Cidade Integra text', (WidgetTester tester) async {
+  testWidgets('App renders without errors', (WidgetTester tester) async {
     await tester.pumpWidget(const CidadeIntegraApp());
-    expect(find.text('Cidade Integra'), findsOneWidget);
+    expect(find.text('Home'), findsOneWidget);
   });
 }
