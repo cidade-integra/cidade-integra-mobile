@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import '../../utils/app_theme.dart';
 
@@ -25,23 +26,9 @@ class AppDrawer extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: AppColors.verde,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(Icons.location_city,
-                        color: Colors.white, size: 32),
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'Cidade Integra',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 22,
-                      fontWeight: FontWeight.w700,
-                    ),
+                  SvgPicture.asset(
+                    'assets/images/logotipo-sem-borda.svg',
+                    height: 48,
                   ),
                   const SizedBox(height: 4),
                   Text(
