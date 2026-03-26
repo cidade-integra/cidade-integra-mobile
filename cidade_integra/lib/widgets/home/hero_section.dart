@@ -57,8 +57,7 @@ class HeroSection extends StatelessWidget {
               child: Image.asset(
                 'assets/images/hero-foto.webp',
                 width: double.infinity,
-                height: 200,
-                fit: BoxFit.cover,
+                fit: BoxFit.contain,
                 errorBuilder: (_, __, ___) => Container(
                   height: 200,
                   decoration: BoxDecoration(
