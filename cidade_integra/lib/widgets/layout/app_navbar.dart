@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
 import '../../utils/app_theme.dart';
 
 class AppNavbar extends StatelessWidget implements PreferredSizeWidget {
@@ -16,9 +17,12 @@ class AppNavbar extends StatelessWidget implements PreferredSizeWidget {
       automaticallyImplyLeading: false,
       toolbarHeight: 70,
       titleSpacing: 16,
-      title: SvgPicture.asset(
-        'assets/images/logotipo-sem-borda.svg',
-        height: 60,
+      title: GestureDetector(
+        onTap: () => context.go('/'),
+        child: SvgPicture.asset(
+          'assets/images/logotipo-sem-borda.svg',
+          height: 60,
+        ),
       ),
       centerTitle: false,
       actions: [
