@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../utils/app_theme.dart';
 
 class AppDrawer extends StatelessWidget {
@@ -9,10 +11,9 @@ class AppDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentPath = GoRouterState.of(context).uri.toString();
-
-    // TODO: substituir por context.watch<AuthProvider>() no Milestone 4
-    final isLoggedIn = _checkIsLoggedIn();
-    final isAdmin = _checkIsAdmin();
+    final auth = context.watch<AuthProvider>();
+    final isLoggedIn = auth.isLoggedIn;
+    final isAdmin = auth.isAdmin;
 
     return Drawer(
       child: Column(
@@ -31,13 +32,31 @@ class AppDrawer extends StatelessWidget {
                     height: 48,
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    'Sua cidade, sua voz',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.8),
-                      fontSize: 14,
+                  if (isLoggedIn && auth.user?.displayName != null) ...[
+                    Text(
+                      auth.user!.displayName!,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 2),
+                    Text(
+                      auth.user!.email ?? '',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.7),
+                        fontSize: 12,
+                      ),
+                    ),
+                  ] else
+                    Text(
+                      'Sua cidade, sua voz',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.8),
+                        fontSize: 14,
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -74,14 +93,13 @@ class AppDrawer extends StatelessWidget {
 
                 const Divider(),
 
-                if (!isLoggedIn) ...[
+                if (!isLoggedIn)
                   _DrawerItem(
                     icon: Icons.login,
                     label: 'Entrar',
                     route: '/login',
                     currentPath: currentPath,
                   ),
-                ],
 
                 if (isLoggedIn) ...[
                   _DrawerItem(
@@ -127,10 +145,9 @@ class AppDrawer extends StatelessWidget {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                     child: OutlinedButton.icon(
-                      onPressed: () {
+                      onPressed: () async {
                         Navigator.pop(context);
-                        // TODO: chamar authProvider.logout() no Milestone 4
-                        context.go('/login');
+                        await auth.logout();
                       },
                       icon: const Icon(Icons.logout, size: 20),
                       label: const Text('Sair'),
@@ -152,10 +169,6 @@ class AppDrawer extends StatelessWidget {
     );
   }
 }
-
-// TODO: remover quando AuthProvider estiver pronto (Milestone 4)
-bool _checkIsLoggedIn() => false;
-bool _checkIsAdmin() => false;
 
 class _DrawerItem extends StatelessWidget {
   final IconData icon;
