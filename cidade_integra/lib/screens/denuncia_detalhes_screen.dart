@@ -5,6 +5,7 @@ import '../models/report.dart';
 import '../services/report_service.dart';
 import '../utils/app_theme.dart';
 import '../widgets/denuncias/status_badge.dart';
+import '../widgets/denuncias/status_flow.dart';
 
 class DenunciaDetalhesScreen extends StatelessWidget {
   final String reportId;
@@ -145,6 +146,13 @@ class _DetailContent extends StatelessWidget {
                 ),
             ],
           ),
+        ),
+
+        const Divider(height: 1),
+
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: StatusFlow(currentStatus: report.status),
         ),
       ],
     );
