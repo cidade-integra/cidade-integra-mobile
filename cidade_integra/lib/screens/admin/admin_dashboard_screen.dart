@@ -93,53 +93,24 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
   Widget _buildStatCards() {
     final s = _stats ?? {};
+    final cards = [
+      _StatCard(title: 'Total', value: '${s['total'] ?? 0}', icon: Icons.campaign, color: AppColors.azul),
+      _StatCard(title: 'Pendentes', value: '${s['pending'] ?? 0}', icon: Icons.hourglass_empty, color: const Color(0xFFF39C12)),
+      _StatCard(title: 'Em Análise', value: '${s['review'] ?? 0}', icon: Icons.search, color: const Color(0xFF3498DB)),
+      _StatCard(title: 'Resolvidas', value: '${s['resolved'] ?? 0}', icon: Icons.check_circle, color: const Color(0xFF2ECC71)),
+      _StatCard(title: 'Rejeitadas', value: '${s['rejected'] ?? 0}', icon: Icons.cancel, color: const Color(0xFFE74C3C)),
+      _StatCard(title: 'Usuários', value: '$_totalUsers', icon: Icons.people, color: const Color(0xFF9B59B6)),
+    ];
+
     return Padding(
       padding: const EdgeInsets.all(16),
-      child: GridView.count(
-        crossAxisCount: 2,
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        mainAxisSpacing: 12,
-        crossAxisSpacing: 12,
-        childAspectRatio: 1.5,
-        children: [
-          _StatCard(
-            title: 'Total',
-            value: '${s['total'] ?? 0}',
-            icon: Icons.campaign,
-            color: AppColors.azul,
-          ),
-          _StatCard(
-            title: 'Pendentes',
-            value: '${s['pending'] ?? 0}',
-            icon: Icons.hourglass_empty,
-            color: const Color(0xFFF39C12),
-          ),
-          _StatCard(
-            title: 'Em Análise',
-            value: '${s['review'] ?? 0}',
-            icon: Icons.search,
-            color: const Color(0xFF3498DB),
-          ),
-          _StatCard(
-            title: 'Resolvidas',
-            value: '${s['resolved'] ?? 0}',
-            icon: Icons.check_circle,
-            color: const Color(0xFF2ECC71),
-          ),
-          _StatCard(
-            title: 'Rejeitadas',
-            value: '${s['rejected'] ?? 0}',
-            icon: Icons.cancel,
-            color: const Color(0xFFE74C3C),
-          ),
-          _StatCard(
-            title: 'Usuários',
-            value: '$_totalUsers',
-            icon: Icons.people,
-            color: const Color(0xFF9B59B6),
-          ),
-        ],
+      child: Wrap(
+        spacing: 12,
+        runSpacing: 12,
+        children: cards.map((c) => SizedBox(
+          width: (MediaQuery.of(context).size.width - 44) / 2,
+          child: c,
+        )).toList(),
       ),
     );
   }
@@ -308,28 +279,28 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: color.withValues(alpha: 0.15)),
       ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+      child: Row(
         children: [
-          Icon(icon, size: 24, color: color),
-          const SizedBox(height: 6),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-              color: color,
-            ),
-          ),
-          Text(
-            title,
-            style: TextStyle(fontSize: 11, color: AppColors.textoSecundario),
+          Icon(icon, size: 22, color: color),
+          const SizedBox(width: 10),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                value,
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: color),
+              ),
+              Text(
+                title,
+                style: TextStyle(fontSize: 11, color: AppColors.textoSecundario),
+              ),
+            ],
           ),
         ],
       ),
