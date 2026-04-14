@@ -6,6 +6,7 @@ import '../screens/home_screen.dart';
 import '../screens/denuncias_screen.dart';
 import '../screens/denuncia_detalhes_screen.dart';
 import '../screens/nova_denuncia_screen.dart';
+import '../screens/editar_perfil_screen.dart';
 import '../screens/login_screen.dart';
 import '../screens/register_screen.dart';
 import '../screens/recuperar_senha_screen.dart';
@@ -21,7 +22,7 @@ import '../screens/admin/admin_usuarios_screen.dart';
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
 
-const _protectedRoutes = ['/nova-denuncia', '/perfil'];
+const _protectedRoutes = ['/nova-denuncia', '/perfil', '/perfil/editar'];
 const _adminRoutes = ['/admin', '/admin/denuncias', '/admin/usuarios'];
 const _authRoutes = ['/login', '/registro', '/recuperar-senha'];
 
@@ -96,6 +97,10 @@ GoRouter buildRouter(AuthProvider auth) {
           GoRoute(
             path: '/perfil',
             builder: (context, state) => const PerfilScreen(),
+          ),
+          GoRoute(
+            path: '/perfil/editar',
+            builder: (context, state) => const EditarPerfilScreen(),
           ),
           GoRoute(
             path: '/admin',
