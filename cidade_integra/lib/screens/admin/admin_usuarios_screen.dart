@@ -136,6 +136,12 @@ class _AdminUsuariosScreenState extends State<AdminUsuariosScreen> {
           color: AppColors.azul,
           child: Row(
             children: [
+              IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
+                tooltip: 'Voltar',
+                onPressed: () => context.go('/admin'),
+              ),
+              const SizedBox(width: 8),
               const Expanded(
                 child: Text(
                   'Gestão de Usuários',
