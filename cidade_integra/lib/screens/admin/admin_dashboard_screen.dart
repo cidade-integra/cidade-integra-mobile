@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../models/report.dart';
@@ -147,14 +146,15 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
   Widget _buildChart() {
     final s = _stats!;
-    final sections = [
-      _pie('Pendentes', s['pending'] ?? 0, const Color(0xFFF39C12)),
-      _pie('Em Análise', s['review'] ?? 0, const Color(0xFF3498DB)),
-      _pie('Resolvidas', s['resolved'] ?? 0, const Color(0xFF2ECC71)),
-      _pie('Rejeitadas', s['rejected'] ?? 0, const Color(0xFFE74C3C)),
-    ].where((e) => e.value > 0).toList();
+    final total = s['total'] ?? 0;
+    if (total == 0) return const SizedBox.shrink();
 
-    if (sections.isEmpty) return const SizedBox.shrink();
+    final bars = [
+      ('Pendentes', s['pending'] ?? 0, const Color(0xFFF39C12)),
+      ('Em Análise', s['review'] ?? 0, const Color(0xFF3498DB)),
+      ('Resolvidas', s['resolved'] ?? 0, const Color(0xFF2ECC71)),
+      ('Rejeitadas', s['rejected'] ?? 0, const Color(0xFFE74C3C)),
+    ];
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -177,61 +177,39 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            SizedBox(
-              height: 180,
-              child: PieChart(
-                PieChartData(
-                  sections: sections,
-                  centerSpaceRadius: 40,
-                  sectionsSpace: 2,
+            ...bars.map((bar) {
+              final (label, value, color) = bar;
+              final pct = total > 0 ? value / total : 0.0;
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(label, style: TextStyle(fontSize: 13, color: AppColors.azul)),
+                        Text('$value (${(pct * 100).toStringAsFixed(0)}%)',
+                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: color)),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        value: pct,
+                        minHeight: 8,
+                        backgroundColor: Colors.grey.shade200,
+                        valueColor: AlwaysStoppedAnimation(color),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 16,
-              runSpacing: 6,
-              children: sections
-                  .map((s) => Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 10,
-                            height: 10,
-                            decoration: BoxDecoration(
-                              color: s.color,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            s.title,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: AppColors.textoSecundario,
-                            ),
-                          ),
-                        ],
-                      ))
-                  .toList(),
-            ),
+              );
+            }),
           ],
         ),
       ),
-    );
-  }
-
-  PieChartSectionData _pie(String label, int value, Color color) {
-    return PieChartSectionData(
-      value: value.toDouble(),
-      color: color,
-      title: '$value',
-      titleStyle: const TextStyle(
-        fontSize: 12,
-        fontWeight: FontWeight.w600,
-        color: Colors.white,
-      ),
-      radius: 35,
     );
   }
 
