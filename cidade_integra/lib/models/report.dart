@@ -119,6 +119,38 @@ class Report {
   }
 }
 
+extension ReportStatusLabel on ReportStatus {
+  String get label {
+    const labels = {
+      ReportStatus.pending: 'Pendente',
+      ReportStatus.review: 'Em Análise',
+      ReportStatus.resolved: 'Resolvida',
+      ReportStatus.rejected: 'Rejeitada',
+    };
+    return labels[this]!;
+  }
+
+  Color get color {
+    const colors = {
+      ReportStatus.pending: Color(0xFFF39C12),
+      ReportStatus.review: Color(0xFF3498DB),
+      ReportStatus.resolved: Color(0xFF2ECC71),
+      ReportStatus.rejected: Color(0xFFE74C3C),
+    };
+    return colors[this]!;
+  }
+
+  Color get backgroundColor {
+    const colors = {
+      ReportStatus.pending: Color(0xFFFFF3CD),
+      ReportStatus.review: Color(0xFFD6EAF8),
+      ReportStatus.resolved: Color(0xFFD5F5E3),
+      ReportStatus.rejected: Color(0xFFFADCD5),
+    };
+    return colors[this]!;
+  }
+}
+
 extension ReportCategoryLabel on ReportCategory {
   String get label {
     const labels = {

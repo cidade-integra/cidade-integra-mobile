@@ -398,13 +398,11 @@ class _DenunciasScreenState extends State<DenunciasScreen> {
   }
 
   String _statusLabel(String status) {
-    const labels = {
-      'pending': 'Pendente',
-      'review': 'Em Análise',
-      'resolved': 'Resolvida',
-      'rejected': 'Rejeitada',
-    };
-    return labels[status] ?? status;
+    final s = ReportStatus.values.firstWhere(
+      (v) => v.name == status,
+      orElse: () => ReportStatus.pending,
+    );
+    return s.label;
   }
 
   String _categoryLabel(String category) {
