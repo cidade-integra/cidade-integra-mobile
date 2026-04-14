@@ -5,6 +5,7 @@ import '../models/report.dart';
 import '../services/report_service.dart';
 import '../utils/app_theme.dart';
 import '../widgets/denuncias/comment_section.dart';
+import '../widgets/denuncias/mapa_denuncia.dart';
 import '../widgets/denuncias/status_badge.dart';
 import '../widgets/denuncias/status_flow.dart';
 
@@ -149,6 +150,40 @@ class _DetailContent extends StatelessWidget {
           ),
         ),
 
+        const Divider(height: 1),
+
+        // Mapa
+        if (report.location.latitude != null &&
+            report.location.longitude != null)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _SectionTitle(title: 'Localização'),
+                const SizedBox(height: 12),
+                MapaDenuncia(
+                  latitude: report.location.latitude!,
+                  longitude: report.location.longitude!,
+                  address: report.location.address,
+                ),
+              ],
+            ),
+          )
+        else if (report.location.address.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _SectionTitle(title: 'Localização'),
+                const SizedBox(height: 12),
+                MapaFallback(address: report.location.address),
+              ],
+            ),
+          ),
+
+        const SizedBox(height: 8),
         const Divider(height: 1),
 
         Padding(
