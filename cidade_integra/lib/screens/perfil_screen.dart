@@ -5,6 +5,7 @@ import '../models/app_user.dart';
 import '../providers/auth_provider.dart';
 import '../services/user_service.dart';
 import '../utils/app_theme.dart';
+import '../widgets/perfil/badges_display.dart';
 
 class PerfilScreen extends StatelessWidget {
   const PerfilScreen({super.key});
@@ -157,46 +158,9 @@ class _ProfileContent extends StatelessWidget {
           ),
         ),
 
-        // Badges placeholder
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppColors.branco,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.bordas),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(Icons.emoji_events_outlined,
-                        size: 20, color: AppColors.azul),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Conquistas',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.azul,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Em breve suas badges aparecerão aqui.',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: AppColors.textoSecundario,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          child: BadgesDisplay(user: user),
         ),
         const SizedBox(height: 16),
 
