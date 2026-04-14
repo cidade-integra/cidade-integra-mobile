@@ -6,6 +6,7 @@ import '../providers/auth_provider.dart';
 import '../services/user_service.dart';
 import '../utils/app_theme.dart';
 import '../widgets/perfil/badges_display.dart';
+import '../widgets/perfil/minhas_denuncias.dart';
 
 class PerfilScreen extends StatelessWidget {
   const PerfilScreen({super.key});
@@ -162,6 +163,9 @@ class _ProfileContent extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: BadgesDisplay(user: user),
         ),
+        const SizedBox(height: 16),
+
+        MinhasDenuncias(userId: user.uid),
         const SizedBox(height: 16),
 
         // Ações
