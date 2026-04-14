@@ -100,7 +100,7 @@ class _DenunciasScreenState extends State<DenunciasScreen> {
         _buildHeader(),
         _buildSearchBar(),
         _buildFilters(),
-        Expanded(child: _buildContent()),
+        _buildContent(),
         if (!_loading && _filteredReports.isNotEmpty) _buildPagination(),
       ],
     );
@@ -336,18 +336,15 @@ class _DenunciasScreenState extends State<DenunciasScreen> {
       );
     }
 
-    return RefreshIndicator(
-      onRefresh: _loadReports,
-      child: ListView.builder(
-        padding: const EdgeInsets.only(top: 8, bottom: 16),
-        itemCount: _pagedReports.length,
-        itemBuilder: (context, index) {
-          final report = _pagedReports[index];
-          return CardDenuncia(
-            report: report,
-            onTap: () => context.go('/denuncias/${report.id}'),
-          );
-        },
+    return Padding(
+      padding: const EdgeInsets.only(top: 8, bottom: 16),
+      child: Column(
+        children: _pagedReports
+            .map((report) => CardDenuncia(
+                  report: report,
+                  onTap: () => context.go('/denuncias/${report.id}'),
+                ))
+            .toList(),
       ),
     );
   }
