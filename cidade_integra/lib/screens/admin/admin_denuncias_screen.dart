@@ -64,6 +64,7 @@ class _AdminDenunciasScreenState extends State<AdminDenunciasScreen> {
   void _showChangeStatusDialog(Report report) {
     final commentController = TextEditingController();
     String? selectedStatus;
+    String commentText = '';
 
     showDialog(
       context: context,
@@ -96,6 +97,7 @@ class _AdminDenunciasScreenState extends State<AdminDenunciasScreen> {
               TextField(
                 controller: commentController,
                 maxLines: 3,
+                onChanged: (v) => setDialogState(() => commentText = v),
                 decoration: const InputDecoration(
                   labelText: 'Comentário *',
                   hintText: 'Motivo da alteração...',
@@ -110,14 +112,14 @@ class _AdminDenunciasScreenState extends State<AdminDenunciasScreen> {
             ),
             ElevatedButton(
               onPressed: selectedStatus != null &&
-                      commentController.text.trim().isNotEmpty
+                      commentText.trim().isNotEmpty
                   ? () async {
                       Navigator.pop(ctx);
                       final auth = context.read<AuthProvider>();
                       await _adminService.updateReportStatusWithAudit(
                         reportId: report.id,
                         newStatus: selectedStatus!,
-                        comment: commentController.text.trim(),
+                        comment: commentText.trim(),
                         userId: auth.user!.uid,
                         userName: auth.user!.displayName ?? 'Admin',
                       );

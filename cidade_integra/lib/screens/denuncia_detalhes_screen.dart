@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import '../models/report.dart';
+import '../providers/auth_provider.dart';
 import '../services/report_service.dart';
+import '../services/saved_reports_service.dart';
 import '../utils/app_theme.dart';
 import '../widgets/denuncias/comment_section.dart';
 import '../widgets/denuncias/mapa_denuncia.dart';
 import '../widgets/denuncias/status_badge.dart';
-import '../widgets/denuncias/status_flow.dart';
 
 class DenunciaDetalhesScreen extends StatelessWidget {
   final String reportId;
@@ -27,9 +29,7 @@ class DenunciaDetalhesScreen extends StatelessWidget {
         }
 
         final report = snapshot.data;
-        if (report == null) {
-          return _NotFoundState();
-        }
+        if (report == null) return _NotFoundState();
 
         return _DetailContent(report: report);
       },
@@ -37,18 +37,77 @@ class DenunciaDetalhesScreen extends StatelessWidget {
   }
 }
 
-class _DetailContent extends StatelessWidget {
+class _DetailContent extends StatefulWidget {
   final Report report;
   const _DetailContent({required this.report});
 
   @override
+  State<_DetailContent> createState() => _DetailContentState();
+}
+
+class _DetailContentState extends State<_DetailContent> {
+  final _savedService = SavedReportsService();
+  bool _isSaved = false;
+  bool _checkingSaved = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkSaved();
+  }
+
+  Future<void> _checkSaved() async {
+    final auth = context.read<AuthProvider>();
+    if (!auth.isLoggedIn) {
+      if (mounted) setState(() => _checkingSaved = false);
+      return;
+    }
+    try {
+      final saved = await _savedService.isSaved(auth.user!.uid, widget.report.id);
+      if (mounted) setState(() { _isSaved = saved; _checkingSaved = false; });
+    } catch (_) {
+      if (mounted) setState(() => _checkingSaved = false);
+    }
+  }
+
+  Future<void> _toggleSave() async {
+    final auth = context.read<AuthProvider>();
+    if (!auth.isLoggedIn) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Faça login para salvar denúncias.')),
+      );
+      return;
+    }
+
+    final uid = auth.user!.uid;
+    if (_isSaved) {
+      await _savedService.removeReport(uid, widget.report.id);
+      if (mounted) {
+        setState(() => _isSaved = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Denúncia removida dos salvos.')),
+        );
+      }
+    } else {
+      await _savedService.saveReport(uid, widget.report.id);
+      if (mounted) {
+        setState(() => _isSaved = true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Denúncia salva!')),
+        );
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final dateFormat = DateFormat("dd 'de' MMMM 'de' yyyy", 'pt_BR');
+    final report = widget.report;
+    final dateFormat = DateFormat("dd/MM/yyyy 'às' HH:mm", 'pt_BR');
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Header azul
+        // Header
         Container(
           width: double.infinity,
           color: AppColors.azul,
@@ -56,21 +115,36 @@ class _DetailContent extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              GestureDetector(
-                onTap: () => context.go('/denuncias'),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.arrow_back, size: 16, color: Colors.white.withValues(alpha: 0.8)),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Voltar para denúncias',
-                      style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 13),
+              Row(
+                children: [
+                  GestureDetector(
+                    onTap: () => context.go('/denuncias'),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.arrow_back, size: 16,
+                            color: Colors.white.withValues(alpha: 0.8)),
+                        const SizedBox(width: 6),
+                        Text('Voltar',
+                            style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.8),
+                                fontSize: 13)),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                  const Spacer(),
+                  if (!_checkingSaved)
+                    IconButton(
+                      icon: Icon(
+                        _isSaved ? Icons.bookmark : Icons.bookmark_border,
+                        color: _isSaved ? AppColors.verde : Colors.white,
+                      ),
+                      tooltip: _isSaved ? 'Remover dos salvos' : 'Salvar',
+                      onPressed: _toggleSave,
+                    ),
+                ],
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 10),
               Text(
                 report.title,
                 style: const TextStyle(
@@ -80,12 +154,36 @@ class _DetailContent extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 10),
-              StatusBadge(status: report.status),
+              Row(
+                children: [
+                  StatusBadge(status: report.status),
+                  const SizedBox(width: 10),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(report.category.icon,
+                            size: 14, color: Colors.white70),
+                        const SizedBox(width: 4),
+                        Text(report.category.label,
+                            style: const TextStyle(
+                                fontSize: 12, color: Colors.white70)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
 
-        // Galeria de imagens
+        // Imagens
         if (report.imageUrls.isNotEmpty) _ImageGallery(urls: report.imageUrls),
 
         // Descrição
@@ -94,8 +192,6 @@ class _DetailContent extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _SectionTitle(title: 'Descrição'),
-              const SizedBox(height: 8),
               Text(
                 report.description,
                 style: TextStyle(
@@ -108,91 +204,89 @@ class _DetailContent extends StatelessWidget {
           ),
         ),
 
-        const Divider(height: 1),
-
-        // Informações
+        // Info cards
         Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _SectionTitle(title: 'Informações'),
-              const SizedBox(height: 12),
-              _InfoRow(
-                icon: Icons.category_outlined,
-                label: 'Categoria',
-                value: report.category.label,
-              ),
-              _InfoRow(
-                icon: Icons.location_on_outlined,
-                label: 'Localização',
-                value: report.location.address.isNotEmpty
-                    ? report.location.address
-                    : '—',
-              ),
-              _InfoRow(
-                icon: Icons.calendar_today_outlined,
-                label: 'Data de Registro',
-                value: dateFormat.format(report.createdAt),
-              ),
-              _InfoRow(
-                icon: Icons.person_outline,
-                label: 'Reportado por',
-                value: report.isAnonymous ? 'Anônimo' : 'Cidadão',
-              ),
-              if (report.resolvedAt != null)
-                _InfoRow(
-                  icon: Icons.check_circle_outline,
-                  label: 'Resolvida em',
-                  value: dateFormat.format(report.resolvedAt!),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.branco,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.bordas),
+            ),
+            child: Column(
+              children: [
+                _InfoItem(
+                  icon: Icons.location_on_outlined,
+                  label: report.location.address.isNotEmpty
+                      ? report.location.address
+                      : 'Localização não informada',
                 ),
-            ],
+                _InfoItem(
+                  icon: Icons.calendar_today_outlined,
+                  label: dateFormat.format(report.createdAt),
+                ),
+                _InfoItem(
+                  icon: Icons.person_outline,
+                  label: report.isAnonymous
+                      ? 'Denúncia anônima'
+                      : 'Reportado por cidadão',
+                ),
+                if (report.resolvedAt != null)
+                  _InfoItem(
+                    icon: Icons.check_circle_outline,
+                    label: 'Resolvida em ${dateFormat.format(report.resolvedAt!)}',
+                    color: AppColors.verde,
+                  ),
+              ],
+            ),
           ),
         ),
-
-        const Divider(height: 1),
+        const SizedBox(height: 16),
 
         // Mapa
         if (report.location.latitude != null &&
             report.location.longitude != null)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _SectionTitle(title: 'Localização'),
-                const SizedBox(height: 12),
-                MapaDenuncia(
-                  latitude: report.location.latitude!,
-                  longitude: report.location.longitude!,
-                  address: report.location.address,
-                ),
-              ],
-            ),
-          )
-        else if (report.location.address.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _SectionTitle(title: 'Localização'),
-                const SizedBox(height: 12),
-                MapaFallback(address: report.location.address),
-              ],
+            child: MapaDenuncia(
+              latitude: report.location.latitude!,
+              longitude: report.location.longitude!,
+              address: report.location.address,
             ),
           ),
 
         const SizedBox(height: 8),
-        const Divider(height: 1),
-
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: StatusFlow(currentStatus: report.status),
-        ),
 
         CommentSection(reportId: report.id),
       ],
+    );
+  }
+}
+
+class _InfoItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color? color;
+
+  const _InfoItem({required this.icon, required this.label, this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = color ?? AppColors.textoSecundario;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: c),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(label,
+                style: TextStyle(fontSize: 13, color: c, height: 1.3)),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -224,7 +318,8 @@ class _ImageGalleryState extends State<_ImageGallery> {
               errorBuilder: (_, __, ___) => Container(
                 color: Colors.grey.shade200,
                 child: const Center(
-                  child: Icon(Icons.broken_image, size: 48, color: Colors.grey),
+                  child:
+                      Icon(Icons.broken_image, size: 48, color: Colors.grey),
                 ),
               ),
             ),
@@ -254,72 +349,6 @@ class _ImageGalleryState extends State<_ImageGallery> {
   }
 }
 
-class _SectionTitle extends StatelessWidget {
-  final String title;
-  const _SectionTitle({required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      title,
-      style: TextStyle(
-        fontSize: 18,
-        fontWeight: FontWeight.w700,
-        color: AppColors.azul,
-      ),
-    );
-  }
-}
-
-class _InfoRow extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-
-  const _InfoRow({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, size: 20, color: AppColors.textoSecundario),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textoSecundario,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  value,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.azul,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _NotFoundState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -331,20 +360,15 @@ class _NotFoundState extends StatelessWidget {
           children: [
             Icon(Icons.search_off, size: 64, color: AppColors.textoSecundario),
             const SizedBox(height: 16),
-            Text(
-              'Denúncia não encontrada',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: AppColors.azul,
-              ),
-            ),
+            Text('Denúncia não encontrada',
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.azul)),
             const SizedBox(height: 8),
-            Text(
-              'A denúncia que você procura não existe ou foi removida.',
-              style: TextStyle(color: AppColors.textoSecundario),
-              textAlign: TextAlign.center,
-            ),
+            Text('A denúncia que você procura não existe ou foi removida.',
+                style: TextStyle(color: AppColors.textoSecundario),
+                textAlign: TextAlign.center),
             const SizedBox(height: 24),
             OutlinedButton.icon(
               onPressed: () => context.go('/denuncias'),
@@ -373,7 +397,9 @@ class _ErrorState extends StatelessWidget {
           Text('Erro ao carregar denúncia.',
               style: TextStyle(color: AppColors.textoSecundario)),
           const SizedBox(height: 16),
-          OutlinedButton(onPressed: onRetry, child: const Text('Tentar novamente')),
+          OutlinedButton(
+              onPressed: onRetry,
+              child: const Text('Tentar novamente')),
         ],
       ),
     );

@@ -233,31 +233,44 @@ class _DenunciasScreenState extends State<DenunciasScreen> {
   void _showStatusFilter() {
     showModalBottomSheet(
       context: context,
-      builder: (_) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              title: const Text('Todas'),
-              leading: const Icon(Icons.list),
-              selected: _statusFilter == null,
-              onTap: () {
-                setState(() => _statusFilter = null);
-                _resetPage();
-                Navigator.pop(context);
-              },
-            ),
-            for (final s in ReportStatus.values)
+      useRootNavigator: true,
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.only(top: 8, bottom: 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 8),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
               ListTile(
-                title: Text(_statusLabel(s.name)),
-                selected: _statusFilter == s.name,
+                title: const Text('Todas'),
+                leading: const Icon(Icons.list),
+                selected: _statusFilter == null,
                 onTap: () {
-                  setState(() => _statusFilter = s.name);
+                  Navigator.pop(sheetContext);
+                  setState(() => _statusFilter = null);
                   _resetPage();
-                  Navigator.pop(context);
                 },
               ),
-          ],
+              for (final s in ReportStatus.values)
+                ListTile(
+                  title: Text(s.label),
+                  selected: _statusFilter == s.name,
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    setState(() => _statusFilter = s.name);
+                    _resetPage();
+                  },
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -266,32 +279,45 @@ class _DenunciasScreenState extends State<DenunciasScreen> {
   void _showCategoryFilter() {
     showModalBottomSheet(
       context: context,
-      builder: (_) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              title: const Text('Todas'),
-              leading: const Icon(Icons.list),
-              selected: _categoryFilter == null,
-              onTap: () {
-                setState(() => _categoryFilter = null);
-                _resetPage();
-                Navigator.pop(context);
-              },
-            ),
-            for (final c in ReportCategory.values)
+      useRootNavigator: true,
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.only(top: 8, bottom: 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 8),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
               ListTile(
-                title: Text(c.label),
-                leading: Icon(c.icon),
-                selected: _categoryFilter == c.name,
+                title: const Text('Todas'),
+                leading: const Icon(Icons.list),
+                selected: _categoryFilter == null,
                 onTap: () {
-                  setState(() => _categoryFilter = c.name);
+                  Navigator.pop(sheetContext);
+                  setState(() => _categoryFilter = null);
                   _resetPage();
-                  Navigator.pop(context);
                 },
               ),
-          ],
+              for (final c in ReportCategory.values)
+                ListTile(
+                  title: Text(c.label),
+                  leading: Icon(c.icon),
+                  selected: _categoryFilter == c.name,
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    setState(() => _categoryFilter = c.name);
+                    _resetPage();
+                  },
+                ),
+            ],
+          ),
         ),
       ),
     );
