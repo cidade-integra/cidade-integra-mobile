@@ -60,7 +60,7 @@ class AdminService {
       if (newStatus == 'resolved') 'resolvedAt': FieldValue.serverTimestamp(),
     });
 
-    final auditRef = FirebaseFirestore.instance.collection('auditlogs').doc();
+    final auditRef = FirebaseFirestore.instance.collection('auditLogs').doc();
     batch.set(auditRef, {
       'timestamp': FieldValue.serverTimestamp(),
       'userId': userId,

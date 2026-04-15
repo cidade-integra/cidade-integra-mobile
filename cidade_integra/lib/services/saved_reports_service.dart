@@ -6,7 +6,7 @@ class SavedReportsService {
     return FirebaseFirestore.instance
         .collection('users')
         .doc(uid)
-        .collection('savedReports');
+        .collection('denunciasSalvas');
   }
 
   Future<void> saveReport(String uid, String reportId) async {
