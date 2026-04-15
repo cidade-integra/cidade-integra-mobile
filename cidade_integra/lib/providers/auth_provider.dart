@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import '../services/notification_service.dart';
 
 class AuthProvider extends ChangeNotifier {
   User? _user;
@@ -35,6 +36,7 @@ class AuthProvider extends ChangeNotifier {
               .collection('users')
               .doc(user.uid)
               .update({'lastLoginAt': DateTime.now().toIso8601String()});
+          await NotificationService().saveTokenForUser(user.uid);
         } else {
           await FirebaseFirestore.instance
               .collection('users')

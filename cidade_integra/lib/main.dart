@@ -2,16 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'firebase_options.dart';
 import 'providers/auth_provider.dart';
 import 'utils/app_theme.dart';
 import 'routes/app_router.dart';
+import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await initializeDateFormatting('pt_BR');
 
   await Supabase.initialize(
     url: 'https://fyjefwpyesgedvfuewiw.supabase.co',
@@ -23,6 +26,8 @@ void main() async {
     serverClientId:
         '677900581774-j5k91404i5por2tm6vgstb3fco0hatsd.apps.googleusercontent.com',
   );
+
+  await NotificationService().initialize();
 
   final authProvider = AuthProvider();
   final router = buildRouter(authProvider);
