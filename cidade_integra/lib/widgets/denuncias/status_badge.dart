@@ -7,18 +7,21 @@ class StatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: status.backgroundColor,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        status.label,
-        style: TextStyle(
-          color: status.color,
-          fontWeight: FontWeight.w600,
-          fontSize: 12,
+    return Semantics(
+      label: 'Status: ${status.label}',
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: status.backgroundColor,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Text(
+          status.label,
+          style: TextStyle(
+            color: status.color,
+            fontWeight: FontWeight.w600,
+            fontSize: 12,
+          ),
         ),
       ),
     );

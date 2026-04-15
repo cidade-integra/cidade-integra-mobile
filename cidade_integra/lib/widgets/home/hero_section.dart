@@ -58,6 +58,7 @@ class HeroSection extends StatelessWidget {
                 'assets/images/hero-foto.webp',
                 width: double.infinity,
                 fit: BoxFit.contain,
+                semanticLabel: 'Cidadãos reportando problemas urbanos na cidade',
                 errorBuilder: (_, __, ___) => Container(
                   height: 200,
                   decoration: BoxDecoration(
