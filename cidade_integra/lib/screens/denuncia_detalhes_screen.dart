@@ -59,11 +59,15 @@ class _DetailContentState extends State<_DetailContent> {
   Future<void> _checkSaved() async {
     final auth = context.read<AuthProvider>();
     if (!auth.isLoggedIn) {
-      setState(() => _checkingSaved = false);
+      if (mounted) setState(() => _checkingSaved = false);
       return;
     }
-    final saved = await _savedService.isSaved(auth.user!.uid, widget.report.id);
-    if (mounted) setState(() { _isSaved = saved; _checkingSaved = false; });
+    try {
+      final saved = await _savedService.isSaved(auth.user!.uid, widget.report.id);
+      if (mounted) setState(() { _isSaved = saved; _checkingSaved = false; });
+    } catch (_) {
+      if (mounted) setState(() => _checkingSaved = false);
+    }
   }
 
   Future<void> _toggleSave() async {
