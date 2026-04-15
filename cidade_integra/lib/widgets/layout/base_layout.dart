@@ -12,21 +12,14 @@ class BaseLayout extends StatelessWidget {
     return Scaffold(
       appBar: const AppNavbar(),
       drawer: const AppDrawer(),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          return SingleChildScrollView(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(minHeight: constraints.maxHeight),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  child,
-                  const AppFooter(),
-                ],
-              ),
-            ),
-          );
-        },
+      body: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            child,
+            const AppFooter(),
+          ],
+        ),
       ),
     );
   }
