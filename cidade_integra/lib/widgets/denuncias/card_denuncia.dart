@@ -17,7 +17,10 @@ class CardDenuncia extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
-        child: Column(
+        child: Semantics(
+          label: '${report.title}, ${report.category.label}, ${report.status.label}',
+          button: true,
+          child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (report.imageUrls.isNotEmpty)
@@ -27,6 +30,7 @@ class CardDenuncia extends StatelessWidget {
                 child: Image.network(
                   report.imageUrls.first,
                   fit: BoxFit.cover,
+                  semanticLabel: 'Foto da denúncia: ${report.title}',
                   errorBuilder: (_, __, ___) => Container(
                     color: Colors.grey.shade200,
                     child: const Center(
@@ -101,6 +105,7 @@ class CardDenuncia extends StatelessWidget {
               ),
             ),
           ],
+        ),
         ),
       ),
     );
