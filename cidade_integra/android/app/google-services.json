@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "677900581774",
+    "project_id": "cidadeintegra",
+    "storage_bucket": "cidadeintegra.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:677900581774:android:d1bfca6f8b3e1bde6682df",
+        "android_client_info": {
+          "package_name": "com.example.cidade_integra"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "677900581774-oncsr2ug6aha394cnat7kdhtjs7q190c.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.cidade_integra",
+            "certificate_hash": "1c9eef7d4969f5992fe3a49db26bfb34a00b93d0"
+          }
+        },
+        {
+          "client_id": "677900581774-j5k91404i5por2tm6vgstb3fco0hatsd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDB99E0vZrpox-8R7rj79gcMlDJ5VfLWyE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "677900581774-j5k91404i5por2tm6vgstb3fco0hatsd.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "677900581774-gkv6jaulqiumtaib14m0ntmjkvbj9k7g.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.cidadeIntegra"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

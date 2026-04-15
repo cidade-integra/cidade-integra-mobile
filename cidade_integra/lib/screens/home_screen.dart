@@ -9,13 +9,15 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
-      children: [
-        HeroSection(),
-        StatsSection(),
-        CategoriesSection(),
-        HowItWorksSection(),
-      ],
+    return const SingleChildScrollView(
+      child: Column(
+        children: [
+          HeroSection(),
+          StatsSection(),
+          CategoriesSection(),
+          HowItWorksSection(),
+        ],
+      ),
     );
   }
 }

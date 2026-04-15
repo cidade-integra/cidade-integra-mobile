@@ -49,7 +49,7 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller.forward();
 
-    Future.delayed(const Duration(milliseconds: 2200), () {
+    Future.delayed(const Duration(milliseconds: 4000), () {
       if (mounted) widget.onComplete();
     });
   }
@@ -83,28 +83,6 @@ class _SplashScreenState extends State<SplashScreen>
               ),
             ),
             const SizedBox(height: 20),
-            SlideTransition(
-              position: _slideUp,
-              child: FadeTransition(
-                opacity: _fadeIn,
-                child: Text(
-                  'Cidade Integra',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                    letterSpacing: 0.5,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black.withValues(alpha: 0.15),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
             const SizedBox(height: 6),
             SlideTransition(
               position: _slideUp,
@@ -113,7 +91,7 @@ class _SplashScreenState extends State<SplashScreen>
                 child: Text(
                   'Sua cidade, sua voz',
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 18,
                     color: Colors.white.withValues(alpha: 0.85),
                     fontWeight: FontWeight.w400,
                   ),
