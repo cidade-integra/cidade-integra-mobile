@@ -9,6 +9,7 @@ import 'firebase_options.dart';
 import 'providers/auth_provider.dart';
 import 'utils/app_theme.dart';
 import 'routes/app_router.dart';
+import 'screens/splash_screen.dart';
 import 'services/notification_service.dart';
 
 void main() async {
@@ -35,7 +36,7 @@ void main() async {
   runApp(CidadeIntegraApp(authProvider: authProvider, router: router));
 }
 
-class CidadeIntegraApp extends StatelessWidget {
+class CidadeIntegraApp extends StatefulWidget {
   final AuthProvider authProvider;
   final GoRouter router;
 
@@ -46,14 +47,30 @@ class CidadeIntegraApp extends StatelessWidget {
   });
 
   @override
+  State<CidadeIntegraApp> createState() => _CidadeIntegraAppState();
+}
+
+class _CidadeIntegraAppState extends State<CidadeIntegraApp> {
+  bool _showSplash = true;
+
+  @override
   Widget build(BuildContext context) {
+    if (_showSplash) {
+      return MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: SplashScreen(
+          onComplete: () => setState(() => _showSplash = false),
+        ),
+      );
+    }
+
     return ChangeNotifierProvider.value(
-      value: authProvider,
+      value: widget.authProvider,
       child: MaterialApp.router(
         title: 'Cidade Integra',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.light,
-        routerConfig: router,
+        routerConfig: widget.router,
       ),
     );
   }

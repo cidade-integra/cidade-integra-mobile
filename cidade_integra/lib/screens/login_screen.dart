@@ -71,11 +71,12 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       }
     } catch (e) {
+      debugPrint('Google Sign-In error: $e');
       if (mounted && e.toString().contains('canceled')) return;
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-              content: Text('Erro ao fazer login com o Google.')),
+          SnackBar(
+              content: Text('Erro ao fazer login com o Google: $e')),
         );
       }
     } finally {
