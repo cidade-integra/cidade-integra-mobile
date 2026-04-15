@@ -106,9 +106,30 @@ Regras de negócio implementadas na aplicação:
 | 1 | Acesso não autorizado ao painel admin | Média | Alto | Verificação de `role` no Firestore Rules + redirect no GoRouter |
 | 2 | Upload de arquivos maliciosos | Baixa | Médio | Validação de tipo (jpg/png/webp) e tamanho (5MB) no `SupabaseService` |
 | 3 | Exposição de dados pessoais em denúncias | Média | Alto | Flag `isAnonymous`, regras Firestore por `userId` |
-| 4 | Spam de denúncias/comentários | Média | Médio | Validação de min/max chars; autenticação obrigatória para escrita |
+| 4 | Spam de denúncias/comentários | Média | Médio | Validação de min/max chars; autenticação obrigatória; rate limiting (📋) |
 | 5 | Token FCM exposto | Baixa | Baixo | Token salvo apenas no doc do próprio usuário com regras de escrita |
 | 6 | Chaves Supabase no código-fonte | Alta | Baixo | Anon key é pública por design; proteção via RLS no Supabase |
+| 7 | Injeção de HTML/script em campos de texto | Média | Alto | Sanitização client-side (📋) + validação server-side nas Firestore Rules (📋) |
+| 8 | Dados malformados persistidos no Firestore | Média | Médio | Validação de estrutura nas Firestore Rules: tipos, tamanhos e valores permitidos (📋) |
+| 9 | Bypass de validação client-side | Alta | Alto | Firestore Rules com validação server-side de todos os campos obrigatórios (📋) |
+| 10 | Abuso por criação em massa de denúncias | Média | Médio | Rate limiting client-side + server-side via `request.time` (📋) |
+
+> 📋 = Mitigação pendente, detalhada nas [tasks pendentes](./planejamento-tasks-pendentes.md).
+
+### 1.6 Superfícies de Ataque
+
+Mapeamento dos pontos de entrada de dados que representam superfícies de ataque:
+
+| # | Superfície | Entrada | Destino | Risco | Status |
+|---|-----------|---------|---------|-------|--------|
+| 1 | Formulário de denúncia | `title`, `description`, `address` | Firestore `reports` | XSS persistido, dados malformados | ✅ Validação client / 📋 Sanitização + server |
+| 2 | Comentários | `message` | Firestore `reports/{id}/comments` | XSS, conteúdo ofensivo, spam | ✅ Min/max chars / 📋 Blocked words + rate limit |
+| 3 | Edição de perfil | `displayName`, `bio`, `region` | Firestore `users` | XSS persistido | ✅ Validação básica / 📋 Sanitização |
+| 4 | Registro | `displayName`, `email`, `password` | Firebase Auth + Firestore `users` | Contas falsas, emails inválidos | ✅ Validação client / 📋 Regex robusto |
+| 5 | Upload de imagens | Arquivo binário | Supabase Storage `reports` | Arquivo malicioso, tamanho excessivo | ✅ Tipo + tamanho / 📋 Validação de URL |
+| 6 | Busca por CEP | `cep` | API ViaCEP (externo) | Injeção na URL, resposta malformada | ✅ Básico / 📋 Regex de formato |
+| 7 | Alteração de status (admin) | `status`, `comment` | Firestore `reports` + `auditLogs` | Valores inválidos, bypass de role | ✅ Client / 📋 Server validation |
+| 8 | Alteração de role (admin) | `role` | Firestore `users` | Elevação de privilégio | ✅ Client / 📋 Server validation |
 
 ---
 
