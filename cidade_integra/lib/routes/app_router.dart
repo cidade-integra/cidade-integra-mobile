@@ -57,68 +57,68 @@ GoRouter buildRouter(AuthProvider auth) {
         routes: [
           GoRoute(
             path: '/',
-            builder: (context, state) => const HomeScreen(),
+            pageBuilder: (context, state) => const NoTransitionPage(child: HomeScreen()),
           ),
           GoRoute(
             path: '/denuncias',
-            builder: (context, state) => const DenunciasScreen(),
+            pageBuilder: (context, state) => const NoTransitionPage(child: DenunciasScreen()),
           ),
           GoRoute(
             path: '/denuncias/:id',
-            builder: (context, state) {
+            pageBuilder: (context, state) {
               final id = state.pathParameters['id']!;
-              return DenunciaDetalhesScreen(reportId: id);
+              return NoTransitionPage(child: DenunciaDetalhesScreen(reportId: id));
             },
           ),
           GoRoute(
             path: '/login',
-            builder: (context, state) => const LoginScreen(),
+            pageBuilder: (context, state) => const NoTransitionPage(child: LoginScreen()),
           ),
           GoRoute(
             path: '/registro',
-            builder: (context, state) => const RegisterScreen(),
+            pageBuilder: (context, state) => const NoTransitionPage(child: RegisterScreen()),
           ),
           GoRoute(
             path: '/recuperar-senha',
-            builder: (context, state) => const RecuperarSenhaScreen(),
+            pageBuilder: (context, state) => const NoTransitionPage(child: RecuperarSenhaScreen()),
           ),
           GoRoute(
             path: '/sobre',
-            builder: (context, state) => const SobreScreen(),
+            pageBuilder: (context, state) => const NoTransitionPage(child: SobreScreen()),
           ),
           GoRoute(
             path: '/duvidas',
-            builder: (context, state) => const FaqScreen(),
+            pageBuilder: (context, state) => const NoTransitionPage(child: FaqScreen()),
           ),
           GoRoute(
             path: '/nova-denuncia',
-            builder: (context, state) => const NovaDenunciaScreen(),
+            pageBuilder: (context, state) => const NoTransitionPage(child: NovaDenunciaScreen()),
           ),
           GoRoute(
             path: '/perfil',
-            builder: (context, state) => const PerfilScreen(),
+            pageBuilder: (context, state) => const NoTransitionPage(child: PerfilScreen()),
           ),
           GoRoute(
             path: '/perfil/editar',
-            builder: (context, state) => const EditarPerfilScreen(),
+            pageBuilder: (context, state) => const NoTransitionPage(child: EditarPerfilScreen()),
           ),
           GoRoute(
             path: '/admin',
-            builder: (context, state) => const AdminDashboardScreen(),
+            pageBuilder: (context, state) => const NoTransitionPage(child: AdminDashboardScreen()),
           ),
           GoRoute(
             path: '/admin/denuncias',
-            builder: (context, state) => const AdminDenunciasScreen(),
+            pageBuilder: (context, state) => const NoTransitionPage(child: AdminDenunciasScreen()),
           ),
           GoRoute(
             path: '/admin/usuarios',
-            builder: (context, state) => const AdminUsuariosScreen(),
+            pageBuilder: (context, state) => const NoTransitionPage(child: AdminUsuariosScreen()),
           ),
         ],
       ),
       GoRoute(
         path: '/acesso-negado',
-        builder: (context, state) => const AccessDeniedScreen(),
+        pageBuilder: (context, state) => const NoTransitionPage(child: AccessDeniedScreen()),
       ),
     ],
   );

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../models/app_user.dart';
 import '../../services/admin_service.dart';
+import '../../services/export_service.dart';
 import '../../utils/app_theme.dart';
 
 class AdminUsuariosScreen extends StatefulWidget {
@@ -135,6 +137,12 @@ class _AdminUsuariosScreenState extends State<AdminUsuariosScreen> {
           color: AppColors.azul,
           child: Row(
             children: [
+              IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
+                tooltip: 'Voltar',
+                onPressed: () => context.go('/admin'),
+              ),
+              const SizedBox(width: 8),
               const Expanded(
                 child: Text(
                   'Gestão de Usuários',
@@ -145,16 +153,19 @@ class _AdminUsuariosScreenState extends State<AdminUsuariosScreen> {
                   ),
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Text(
-                  '${_allUsers.length} usuários',
-                  style: const TextStyle(fontSize: 13, color: Colors.white),
-                ),
+              IconButton(
+                icon: const Icon(Icons.file_download, color: Colors.white),
+                tooltip: 'Exportar CSV',
+                onPressed: _allUsers.isEmpty
+                    ? null
+                    : () async {
+                        await ExportService().exportUsersCSV(_allUsers);
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('CSV exportado.')),
+                          );
+                        }
+                      },
               ),
             ],
           ),

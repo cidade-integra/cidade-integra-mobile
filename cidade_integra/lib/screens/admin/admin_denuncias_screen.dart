@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../models/report.dart';
@@ -6,6 +7,7 @@ import '../../providers/auth_provider.dart';
 import '../../services/admin_service.dart';
 import '../../services/report_service.dart';
 import '../../utils/app_theme.dart';
+import '../../services/export_service.dart';
 import '../../widgets/denuncias/status_badge.dart';
 
 class AdminDenunciasScreen extends StatefulWidget {
@@ -146,13 +148,39 @@ class _AdminDenunciasScreenState extends State<AdminDenunciasScreen> {
           width: double.infinity,
           padding: const EdgeInsets.all(24),
           color: AppColors.azul,
-          child: const Text(
-            'Gestão de Denúncias',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-              color: Colors.white,
-            ),
+          child: Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
+                tooltip: 'Voltar',
+                onPressed: () => context.go('/admin'),
+              ),
+              const SizedBox(width: 8),
+              const Expanded(
+                child: Text(
+                  'Gestão de Denúncias',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.file_download, color: Colors.white),
+                tooltip: 'Exportar CSV',
+                onPressed: _allReports.isEmpty
+                    ? null
+                    : () async {
+                        await ExportService().exportReportsCSV(_allReports);
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('CSV exportado.')),
+                          );
+                        }
+                      },
+              ),
+            ],
           ),
         ),
 
