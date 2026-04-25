@@ -106,13 +106,13 @@ Regras de negócio implementadas na aplicação:
 | 1 | Acesso não autorizado ao painel admin | Média | Alto | Verificação de `role` no Firestore Rules + redirect no GoRouter |
 | 2 | Upload de arquivos maliciosos | Baixa | Médio | Validação de tipo (jpg/png/webp) e tamanho (5MB) no `SupabaseService` |
 | 3 | Exposição de dados pessoais em denúncias | Média | Alto | Flag `isAnonymous`, regras Firestore por `userId` |
-| 4 | Spam de denúncias/comentários | Média | Médio | Validação de min/max chars; autenticação obrigatória; rate limiting (📋) |
+| 4 | Spam de denúncias/comentários | Média | Médio | ✅ Rate limiting client-side (5 denúncias/h, 10 comentários/h) + debounce 400ms nas buscas |
 | 5 | Token FCM exposto | Baixa | Baixo | Token salvo apenas no doc do próprio usuário com regras de escrita |
 | 6 | Chaves Supabase no código-fonte | Alta | Baixo | Anon key é pública por design; proteção via RLS no Supabase |
 | 7 | Injeção de HTML/script em campos de texto | Média | Alto | ✅ Sanitização client-side via `InputSanitizer.sanitize()` + 📋 validação server-side |
 | 8 | Dados malformados persistidos no Firestore | Média | Médio | Validação de estrutura nas Firestore Rules: tipos, tamanhos e valores permitidos (📋) |
 | 9 | Bypass de validação client-side | Alta | Alto | Firestore Rules com validação server-side de todos os campos obrigatórios (📋) |
-| 10 | Abuso por criação em massa de denúncias | Média | Médio | Rate limiting client-side + server-side via `request.time` (📋) |
+| 10 | Abuso por criação em massa de denúncias | Média | Médio | ✅ `RateLimiter` client-side (5/h) via SharedPreferences + 📋 server-side via `request.time` |
 
 > 📋 = Mitigação pendente, detalhada nas [tasks pendentes](./planejamento-tasks-pendentes.md).
 
@@ -144,6 +144,18 @@ Classe centralizada em `lib/utils/input_sanitizer.dart` com as seguintes proteç
 | `isValidCep(String)` | Regex `^\d{5}-?\d{3}$` | Formulário de denúncia |
 | `containsBlockedWords(String)` | Lista de 18+ palavras ofensivas em pt-BR | Denúncia (pré-submit), comentários (pré-submit) |
 | `validateImageUrl(String)` | Whitelist de hosts permitidos (Supabase, Firebase Storage) | CardDenuncia, galeria de detalhes |
+
+### 1.8 Proteção contra Abuso — `RateLimiter` e `Debouncer`
+
+Utilitários em `lib/utils/rate_limiter.dart` para prevenção de abuso:
+
+| Classe | Método | Proteção | Onde é usado |
+|--------|--------|----------|-------------|
+| `RateLimiter` | `canPerform(key, maxPerHour)` | Limite de ações por hora via `SharedPreferences` com log de bloqueios | Criação de denúncia (5/h), comentários (10/h/denúncia) |
+| `RateLimiter` | `reset(key)` | Limpa histórico de ações para um key | Uso administrativo |
+| `Debouncer` | `call(action)` | Atrasa execução até input parar por 400ms | Busca em denúncias, admin denúncias, admin usuários |
+
+**Proteção adicional:** Todos os botões de submit desabilitam durante processamento (`onPressed: _loading ? null : _submit`), prevenindo duplo-envio.
 
 ---
 
