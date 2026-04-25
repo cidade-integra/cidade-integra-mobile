@@ -77,7 +77,7 @@ class Report {
         orElse: () => ReportCategory.outros,
       ),
       isAnonymous: data['isAnonymous'] ?? false,
-      userId: data['userId'],
+      userId: (data['isAnonymous'] == true) ? null : data['userId'],
       location: ReportLocation.fromMap(
         data['location'] is Map<String, dynamic>
             ? data['location']
@@ -101,7 +101,7 @@ class Report {
       'description': description,
       'category': category.name,
       'isAnonymous': isAnonymous,
-      'userId': userId,
+      'userId': isAnonymous ? null : userId,
       'location': location.toMap(),
       'imagemUrls': imageUrls,
       'status': status.name,
