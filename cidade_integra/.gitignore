@@ -43,3 +43,11 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Local secrets (Firebase + Supabase + outros)
+# Gerado por scripts/setup_env.sh — NUNCA commitar.
+env/secrets.json
+env/secrets.local.json
+*.env
+.env
+.env.local

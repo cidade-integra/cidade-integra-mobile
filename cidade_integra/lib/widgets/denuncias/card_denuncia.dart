@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../models/report.dart';
 import '../../utils/app_theme.dart';
+import '../../utils/input_sanitizer.dart';
 import 'status_badge.dart';
 
 class CardDenuncia extends StatelessWidget {
@@ -23,7 +24,8 @@ class CardDenuncia extends StatelessWidget {
           child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (report.imageUrls.isNotEmpty)
+            if (report.imageUrls.isNotEmpty &&
+                InputSanitizer.validateImageUrl(report.imageUrls.first) != null)
               SizedBox(
                 height: 160,
                 width: double.infinity,

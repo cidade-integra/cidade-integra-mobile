@@ -109,7 +109,7 @@ Regras de negócio implementadas na aplicação:
 | 4 | Spam de denúncias/comentários | Média | Médio | Validação de min/max chars; autenticação obrigatória; rate limiting (📋) |
 | 5 | Token FCM exposto | Baixa | Baixo | Token salvo apenas no doc do próprio usuário com regras de escrita |
 | 6 | Chaves Supabase no código-fonte | Alta | Baixo | Anon key é pública por design; proteção via RLS no Supabase |
-| 7 | Injeção de HTML/script em campos de texto | Média | Alto | Sanitização client-side (📋) + validação server-side nas Firestore Rules (📋) |
+| 7 | Injeção de HTML/script em campos de texto | Média | Alto | ✅ Sanitização client-side via `InputSanitizer.sanitize()` + 📋 validação server-side |
 | 8 | Dados malformados persistidos no Firestore | Média | Médio | Validação de estrutura nas Firestore Rules: tipos, tamanhos e valores permitidos (📋) |
 | 9 | Bypass de validação client-side | Alta | Alto | Firestore Rules com validação server-side de todos os campos obrigatórios (📋) |
 | 10 | Abuso por criação em massa de denúncias | Média | Médio | Rate limiting client-side + server-side via `request.time` (📋) |
@@ -122,14 +122,28 @@ Mapeamento dos pontos de entrada de dados que representam superfícies de ataque
 
 | # | Superfície | Entrada | Destino | Risco | Status |
 |---|-----------|---------|---------|-------|--------|
-| 1 | Formulário de denúncia | `title`, `description`, `address` | Firestore `reports` | XSS persistido, dados malformados | ✅ Validação client / 📋 Sanitização + server |
-| 2 | Comentários | `message` | Firestore `reports/{id}/comments` | XSS, conteúdo ofensivo, spam | ✅ Min/max chars / 📋 Blocked words + rate limit |
-| 3 | Edição de perfil | `displayName`, `bio`, `region` | Firestore `users` | XSS persistido | ✅ Validação básica / 📋 Sanitização |
-| 4 | Registro | `displayName`, `email`, `password` | Firebase Auth + Firestore `users` | Contas falsas, emails inválidos | ✅ Validação client / 📋 Regex robusto |
-| 5 | Upload de imagens | Arquivo binário | Supabase Storage `reports` | Arquivo malicioso, tamanho excessivo | ✅ Tipo + tamanho / 📋 Validação de URL |
-| 6 | Busca por CEP | `cep` | API ViaCEP (externo) | Injeção na URL, resposta malformada | ✅ Básico / 📋 Regex de formato |
-| 7 | Alteração de status (admin) | `status`, `comment` | Firestore `reports` + `auditLogs` | Valores inválidos, bypass de role | ✅ Client / 📋 Server validation |
-| 8 | Alteração de role (admin) | `role` | Firestore `users` | Elevação de privilégio | ✅ Client / 📋 Server validation |
+| 1 | Formulário de denúncia | `title`, `description`, `address` | Firestore `reports` | XSS persistido, dados malformados | ✅ Sanitizado (`InputSanitizer.sanitize`) + blocked words + `maxLength` (100/2000/200) |
+| 2 | Comentários | `message` | Firestore `reports/{id}/comments` | XSS, conteúdo ofensivo, spam | ✅ Sanitizado + blocked words + min 5 / max 500 chars |
+| 3 | Edição de perfil | `displayName`, `bio`, `region` | Firestore `users` | XSS persistido | ✅ Sanitizado antes de salvar + `validateName` com regex + `maxLength` 60/200 |
+| 4 | Registro | `displayName`, `email`, `password` | Firebase Auth + Firestore `users` | Contas falsas, emails inválidos | ✅ `validateName` + `validateEmail` (regex RFC 5322) + sanitização do nome |
+| 5 | Upload de imagens | Arquivo binário | Supabase Storage `reports` | Arquivo malicioso, tamanho excessivo | ✅ Tipo (jpg/png/webp) + tamanho (5MB) + `validateImageUrl` (whitelist de hosts) |
+| 6 | Busca por CEP | `cep` | API ViaCEP (externo) | Injeção na URL, resposta malformada | ✅ Regex `^\d{5}-?\d{3}$` + `maxLength: 9` |
+| 7 | Alteração de status (admin) | `status`, `comment` | Firestore `reports` + `auditLogs` | Valores inválidos, bypass de role | ✅ Client check / 📋 Server validation pendente |
+| 8 | Alteração de role (admin) | `role` | Firestore `users` | Elevação de privilégio | ✅ Client check / 📋 Server validation pendente |
+
+### 1.7 Utilitário de Sanitização — `InputSanitizer`
+
+Classe centralizada em `lib/utils/input_sanitizer.dart` com as seguintes proteções:
+
+| Método | Proteção | Onde é usado |
+|--------|----------|-------------|
+| `sanitize(String)` | Remove tags HTML, padrões `javascript:`/`on*=`, caracteres de controle, normaliza espaços | Denúncia (título, descrição), comentários, edição de perfil, registro |
+| `validateEmail(String)` | Regex RFC 5322 completo | Login, registro |
+| `validateName(String)` | Min/max chars + regex letras/acentos + sanitização | Registro, edição de perfil |
+| `validateText(String)` | Min/max chars + sanitização + blocked words (opcional) | Título, descrição, endereço |
+| `isValidCep(String)` | Regex `^\d{5}-?\d{3}$` | Formulário de denúncia |
+| `containsBlockedWords(String)` | Lista de 18+ palavras ofensivas em pt-BR | Denúncia (pré-submit), comentários (pré-submit) |
+| `validateImageUrl(String)` | Whitelist de hosts permitidos (Supabase, Firebase Storage) | CardDenuncia, galeria de detalhes |
 
 ---
 
@@ -200,13 +214,17 @@ lib/
 
 | # | Prática | Implementação no projeto |
 |---|---------|--------------------------|
-| 1 | **Validação de entrada** | Todos os formulários (`Form` + `TextFormField.validator`): login, registro, nova denúncia, editar perfil, comentários |
-| 2 | **Regras de segurança (Firestore)** | Regras granulares por coleção: `reports` (leitura pública, escrita autenticada), `users` (escrita pelo dono ou admin), `auditLogs` (imutável) |
-| 3 | **Autenticação via Firebase Auth** | `authStateChanges()` no `AuthProvider`; `signInWithEmailAndPassword`, `signInWithCredential` (Google), `createUserWithEmailAndPassword` |
-| 4 | **Mapeamento de erros** | `auth_error_mapper.dart` com 15 códigos de erro traduzidos para português |
-| 5 | **Proteção de rotas** | `GoRouter.redirect` com listas de rotas protegidas e admin; verificação de `isLoggedIn` e `isAdmin` |
-| 6 | **Upload seguro** | `SupabaseService.uploadImage` valida extensão (jpg/png/webp) e tamanho (max 5MB) antes do upload |
-| 7 | **Dependências atualizadas** | 20 dependências Flutter gerenciadas via `pubspec.yaml` com versionamento semântico |
+| 1 | **Validação de entrada** | Todos os formulários (`Form` + `TextFormField.validator`) com `maxLength` definido: título (100), descrição (2000), comentário (500), bio (200), nome (60), CEP (9), endereço (200) |
+| 2 | **Sanitização de dados** | `InputSanitizer` centralizado: remoção de tags HTML, padrões `javascript:`/`on*=`, caracteres de controle. Aplicado em todas as submissões antes de persistir no Firestore |
+| 3 | **Filtro de conteúdo** | Lista de 18+ palavras bloqueadas (`blockedWords`). Verificação pré-submit em denúncias e comentários com feedback via SnackBar |
+| 4 | **Validação de URLs** | `validateImageUrl` com whitelist de hosts permitidos (Supabase, Firebase Storage). Imagens de URLs desconhecidos não são renderizadas |
+| 5 | **Regras de segurança (Firestore)** | Regras granulares por coleção: `reports` (leitura pública, escrita autenticada), `users` (escrita pelo dono ou admin), `auditLogs` (imutável) |
+| 6 | **Autenticação via Firebase Auth** | `authStateChanges()` no `AuthProvider`; `signInWithEmailAndPassword`, `signInWithCredential` (Google), `createUserWithEmailAndPassword` |
+| 7 | **Mapeamento de erros** | `auth_error_mapper.dart` com 15 códigos de erro traduzidos para português |
+| 8 | **Proteção de rotas** | `GoRouter.redirect` com listas de rotas protegidas e admin; verificação de `isLoggedIn` e `isAdmin` |
+| 9 | **Upload seguro** | `SupabaseService.uploadImage` valida extensão (jpg/png/webp) e tamanho (max 5MB) antes do upload |
+| 10 | **Validação de formatos** | Email com regex RFC 5322, CEP com regex `^\d{5}-?\d{3}$`, nome com regex `^[a-zA-ZÀ-ÿ\s]+$` |
+| 11 | **Dependências atualizadas** | 20+ dependências Flutter gerenciadas via `pubspec.yaml` com versionamento semântico |
 
 ### 3.2 Dependências e Integrações
 

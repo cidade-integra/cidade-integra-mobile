@@ -10,6 +10,7 @@ import '../services/geocoding_service.dart';
 import '../services/report_service.dart';
 import '../services/supabase_service.dart';
 import '../utils/app_theme.dart';
+import '../utils/input_sanitizer.dart';
 import '../widgets/denuncia_form/image_upload.dart';
 
 class NovaDenunciaScreen extends StatefulWidget {
@@ -42,8 +43,8 @@ class _NovaDenunciaScreenState extends State<NovaDenunciaScreen> {
   }
 
   Future<void> _buscarCep() async {
+    if (!InputSanitizer.isValidCep(_cepController.text)) return;
     final cep = _cepController.text.replaceAll(RegExp(r'\D'), '');
-    if (cep.length != 8) return;
 
     setState(() => _buscandoCep = true);
     try {
@@ -63,6 +64,19 @@ class _NovaDenunciaScreenState extends State<NovaDenunciaScreen> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+
+    final title = InputSanitizer.sanitize(_tituloController.text);
+    final description = InputSanitizer.sanitize(_descricaoController.text);
+    final endereco = InputSanitizer.sanitize(_enderecoController.text);
+
+    if (InputSanitizer.containsBlockedWords(title) ||
+        InputSanitizer.containsBlockedWords(description)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('O texto contém palavras inadequadas.')),
+      );
+      return;
+    }
+
     setState(() => _loading = true);
 
     try {
@@ -75,13 +89,12 @@ class _NovaDenunciaScreenState extends State<NovaDenunciaScreen> {
         imageUrls.add(url);
       }
 
-      final coords = await GeocodingService()
-          .getCoordinates(_enderecoController.text);
+      final coords = await GeocodingService().getCoordinates(endereco);
 
       final report = Report(
         id: '',
-        title: _tituloController.text.trim(),
-        description: _descricaoController.text.trim(),
+        title: title,
+        description: description,
         category: ReportCategory.values.firstWhere(
           (c) => c.name == _categoriaSelecionada,
           orElse: () => ReportCategory.outros,
@@ -89,8 +102,8 @@ class _NovaDenunciaScreenState extends State<NovaDenunciaScreen> {
         isAnonymous: _isAnonima,
         userId: _isAnonima ? null : user?.uid,
         location: ReportLocation(
-          address: _enderecoController.text.trim(),
-          postalCode: _cepController.text.trim(),
+          address: endereco,
+          postalCode: _cepController.text.replaceAll(RegExp(r'\D'), ''),
           latitude: coords?.lat,
           longitude: coords?.lng,
         ),
@@ -182,22 +195,22 @@ class _NovaDenunciaScreenState extends State<NovaDenunciaScreen> {
           TextFormField(
             controller: _tituloController,
             textInputAction: TextInputAction.next,
+            maxLength: 100,
             decoration: const InputDecoration(
               labelText: 'Título *',
               hintText: 'Ex: Buraco na calçada',
               prefixIcon: Icon(Icons.title),
+              counterText: '',
             ),
-            validator: (v) {
-              if (v == null || v.trim().isEmpty) return 'Informe o título';
-              if (v.trim().length < 3) return 'Mínimo 3 caracteres';
-              return null;
-            },
+            validator: (v) => InputSanitizer.validateText(v,
+                fieldName: 'o título', min: 3, max: 100),
           ),
           const SizedBox(height: 16),
 
           TextFormField(
             controller: _descricaoController,
             maxLines: 4,
+            maxLength: 2000,
             textInputAction: TextInputAction.next,
             decoration: const InputDecoration(
               labelText: 'Descrição *',
@@ -205,11 +218,8 @@ class _NovaDenunciaScreenState extends State<NovaDenunciaScreen> {
               prefixIcon: Icon(Icons.description_outlined),
               alignLabelWithHint: true,
             ),
-            validator: (v) {
-              if (v == null || v.trim().isEmpty) return 'Informe a descrição';
-              if (v.trim().length < 10) return 'Mínimo 10 caracteres';
-              return null;
-            },
+            validator: (v) => InputSanitizer.validateText(v,
+                fieldName: 'a descrição', min: 10, max: 2000),
           ),
           const SizedBox(height: 16),
 
@@ -234,10 +244,12 @@ class _NovaDenunciaScreenState extends State<NovaDenunciaScreen> {
             controller: _cepController,
             keyboardType: TextInputType.number,
             textInputAction: TextInputAction.next,
+            maxLength: 9,
             decoration: InputDecoration(
               labelText: 'CEP (opcional)',
               hintText: '00000-000',
               prefixIcon: const Icon(Icons.local_post_office_outlined),
+              counterText: '',
               suffixIcon: _buscandoCep
                   ? const Padding(
                       padding: EdgeInsets.all(12),
@@ -249,6 +261,11 @@ class _NovaDenunciaScreenState extends State<NovaDenunciaScreen> {
                     )
                   : null,
             ),
+            validator: (v) {
+              if (v == null || v.trim().isEmpty) return null;
+              if (!InputSanitizer.isValidCep(v)) return 'CEP inválido (00000-000)';
+              return null;
+            },
             onEditingComplete: _buscarCep,
           ),
           const SizedBox(height: 16),
@@ -256,16 +273,15 @@ class _NovaDenunciaScreenState extends State<NovaDenunciaScreen> {
           TextFormField(
             controller: _enderecoController,
             textInputAction: TextInputAction.done,
+            maxLength: 200,
             decoration: const InputDecoration(
               labelText: 'Endereço *',
               hintText: 'Rua, bairro - cidade/UF',
               prefixIcon: Icon(Icons.location_on_outlined),
+              counterText: '',
             ),
-            validator: (v) {
-              if (v == null || v.trim().isEmpty) return 'Informe o endereço';
-              if (v.trim().length < 5) return 'Mínimo 5 caracteres';
-              return null;
-            },
+            validator: (v) => InputSanitizer.validateText(v,
+                fieldName: 'o endereço', min: 5, max: 200),
           ),
           const SizedBox(height: 20),
 

@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:go_router/go_router.dart';
 import '../utils/app_theme.dart';
 import '../utils/auth_error_mapper.dart';
+import '../utils/input_sanitizer.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -44,6 +45,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
+    final nome = InputSanitizer.sanitize(_nomeController.text);
+
     setState(() => _loading = true);
     try {
       final cred = await FirebaseAuth.instance.createUserWithEmailAndPassword(
@@ -51,13 +54,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
         password: _senhaController.text,
       );
 
-      await cred.user!.updateDisplayName(_nomeController.text.trim());
+      await cred.user!.updateDisplayName(nome);
 
       await FirebaseFirestore.instance
           .collection('users')
           .doc(cred.user!.uid)
           .set({
-        'displayName': _nomeController.text.trim(),
+        'displayName': nome,
         'email': cred.user!.email,
         'photoURL': '',
         'role': 'user',
@@ -95,8 +98,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (mounted) setState(() => _loading = false);
     }
   }
-
-  static final _nameRegex = RegExp(r'^[a-zA-ZÀ-ÿ\s]+$');
 
   @override
   Widget build(BuildContext context) {
@@ -196,18 +197,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 prefixIcon: Icon(Icons.person_outline),
                 counterText: '',
               ),
-              validator: (v) {
-                if (v == null || v.trim().isEmpty) {
-                  return 'Preencha seu nome completo';
-                }
-                if (v.trim().length < 3) {
-                  return 'O nome deve ter pelo menos 3 caracteres';
-                }
-                if (!_nameRegex.hasMatch(v.trim())) {
-                  return 'O nome deve conter apenas letras e espaços';
-                }
-                return null;
-              },
+              validator: (v) => InputSanitizer.validateName(v),
             ),
             const SizedBox(height: 16),
 
@@ -220,13 +210,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 hintText: 'seu@email.com',
                 prefixIcon: Icon(Icons.mail_outline),
               ),
-              validator: (v) {
-                if (v == null || v.trim().isEmpty) return 'Informe o email';
-                if (!v.contains('@') || !v.contains('.')) {
-                  return 'Insira um email válido';
-                }
-                return null;
-              },
+              validator: (v) => InputSanitizer.validateEmail(v),
             ),
             const SizedBox(height: 16),
 
