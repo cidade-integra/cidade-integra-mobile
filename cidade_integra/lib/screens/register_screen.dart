@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:go_router/go_router.dart';
 import '../utils/app_theme.dart';
 import '../utils/auth_error_mapper.dart';
+import '../services/analytics_service.dart';
 import '../utils/input_sanitizer.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -74,6 +75,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         'status': 'active',
       });
 
+      await AnalyticsService.logRegister();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Cadastro realizado com sucesso!')),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/auth_provider.dart';
+import '../services/analytics_service.dart';
 import '../widgets/layout/base_layout.dart';
 import '../screens/home_screen.dart';
 import '../screens/denuncias_screen.dart';
@@ -31,6 +32,7 @@ GoRouter buildRouter(AuthProvider auth) {
     navigatorKey: _rootNavigatorKey,
     initialLocation: '/',
     refreshListenable: auth,
+    observers: [AnalyticsService.observer],
     errorBuilder: (context, state) => const NotFoundScreen(),
     redirect: (context, state) {
       final path = state.uri.path;

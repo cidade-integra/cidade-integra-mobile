@@ -11,6 +11,7 @@ import '../services/report_service.dart';
 import '../services/supabase_service.dart';
 import '../utils/app_theme.dart';
 import '../utils/input_sanitizer.dart';
+import '../services/analytics_service.dart';
 import '../utils/rate_limiter.dart';
 import '../widgets/denuncia_form/image_upload.dart';
 
@@ -126,6 +127,7 @@ class _NovaDenunciaScreenState extends State<NovaDenunciaScreen> {
       );
 
       await ReportService().createReport(report);
+      await AnalyticsService.logCreateReport(report.category.name);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

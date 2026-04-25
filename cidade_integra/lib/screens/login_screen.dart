@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../utils/app_theme.dart';
 import '../utils/auth_error_mapper.dart';
+import '../services/analytics_service.dart';
 import '../utils/input_sanitizer.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -36,6 +37,7 @@ class _LoginScreenState extends State<LoginScreen> {
         email: _emailController.text.trim(),
         password: _senhaController.text,
       );
+      await AnalyticsService.logLogin('email');
       if (mounted) context.go('/');
     } on FirebaseAuthException catch (e) {
       if (mounted) {
@@ -64,6 +66,7 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       await FirebaseAuth.instance.signInWithCredential(credential);
+      await AnalyticsService.logLogin('google');
       if (mounted) context.go('/');
     } on FirebaseAuthException catch (e) {
       if (mounted) {
