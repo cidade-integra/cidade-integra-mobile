@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../models/report.dart';
 import '../providers/auth_provider.dart';
 import '../services/report_service.dart';
+import '../services/analytics_service.dart';
 import '../services/saved_reports_service.dart';
 import '../utils/app_theme.dart';
 import '../widgets/denuncias/comment_section.dart';
@@ -90,6 +91,7 @@ class _DetailContentState extends State<_DetailContent> {
       }
     } else {
       await _savedService.saveReport(uid, widget.report.id);
+      await AnalyticsService.logSaveReport(widget.report.id);
       if (mounted) {
         setState(() => _isSaved = true);
         ScaffoldMessenger.of(context).showSnackBar(

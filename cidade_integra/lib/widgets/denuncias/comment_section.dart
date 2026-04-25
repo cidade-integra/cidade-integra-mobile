@@ -6,6 +6,7 @@ import '../../providers/auth_provider.dart';
 import '../../services/comment_service.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/input_sanitizer.dart';
+import '../../services/analytics_service.dart';
 import '../../utils/rate_limiter.dart';
 
 class CommentSection extends StatefulWidget {
@@ -72,6 +73,7 @@ class _CommentSectionState extends State<CommentSection> {
         role: auth.role,
       );
       await _service.addComment(widget.reportId, comment);
+      await AnalyticsService.logAddComment(widget.reportId);
       _controller.clear();
     } catch (_) {
       if (mounted) {
