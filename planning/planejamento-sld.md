@@ -286,7 +286,6 @@ lib/
 1. 📋 Revisão final de segurança e privacidade pendente.
 2. 📋 Validação de todas as mitigações STRIDE em ambiente de produção.
 3. 📋 Checklist de conformidade LGPD com DPO.
-4. 📋 Preparação para publicação nas lojas (Google Play / App Store).
 
 ---
 

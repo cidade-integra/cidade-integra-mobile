@@ -17,9 +17,8 @@
 | 5 | Integrar Firebase Analytics | 🔵 Integração | 3 | `feature/analytics` |
 | 6 | Integrar Firebase App Check | 🔵 Integração | 5 | `feature/app-check` |
 | 7 | Testes de Integração E2E | 🔴 Refatoração | 8 | `test/integracao-e2e` |
-| 8 | Preparar Assets para Publicação | 🟠 UX | 3 | `chore/preparar-publicacao` |
 
-**Total: 42 pontos em 8 tasks**
+**Total: 39 pontos em 7 tasks**
 
 ---
 
@@ -353,45 +352,3 @@ void main() {
 }
 ```
 
----
-
-### 🟠 [UX | 3 pontos] Preparar Assets para Publicação nas Lojas
-
-#### 🧩 Descrição
-Preparar os assets necessários para publicação na Google Play Store e Apple App Store: ícone do app, splash screen nativa, screenshots e metadados.
-
-#### 🎯 Objetivo e Critérios de Aceite
-- [ ] Ícone do app customizado (substituir o ícone padrão do Flutter).
-- [ ] Splash screen nativa configurada (pré-Flutter, enquanto o engine carrega).
-- [ ] `applicationId` atualizado de `com.example.cidade_integra` para o definitivo.
-- [ ] Screenshots capturadas para listagem na loja (pelo menos 3 telas).
-- [ ] Descrição do app e textos para a loja preparados.
-- [ ] `versionName` e `versionCode` atualizados para 1.0.0+1.
-
-#### 🔍 Referência no projeto antigo (React)
-- PWA icons e manifest existentes no projeto React.
-
-#### 📝 O que aprender para realizar essa task? (Foco em Flutter)
-- `flutter_launcher_icons` package para gerar ícones
-- `flutter_native_splash` package para splash nativa
-- Android: `AndroidManifest.xml`, keystore para release
-- iOS: `Info.plist`, certificados e provisioning profiles
-- https://docs.flutter.dev/deployment/android
-- https://docs.flutter.dev/deployment/ios
-
-#### 🌱 Sugestão de Branch
-`chore/preparar-publicacao`
-
-### 🤓 Dica: por onde começar
-
-```yaml
-# pubspec.yaml
-flutter_launcher_icons:
-  android: true
-  ios: true
-  image_path: "assets/images/Logo.png"
-
-flutter_native_splash:
-  color: "#5BC561"
-  image: "assets/images/Logo.png"
-```
