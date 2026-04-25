@@ -5,6 +5,7 @@ import '../models/app_user.dart';
 import '../providers/auth_provider.dart';
 import '../services/user_service.dart';
 import '../utils/app_theme.dart';
+import '../utils/input_sanitizer.dart';
 
 class EditarPerfilScreen extends StatelessWidget {
   const EditarPerfilScreen({super.key});
@@ -66,14 +67,19 @@ class _EditFormState extends State<_EditForm> {
 
   Future<void> _salvar() async {
     if (!_formKey.currentState!.validate()) return;
+
+    final nome = InputSanitizer.sanitize(_nomeController.text);
+    final bio = InputSanitizer.sanitize(_bioController.text);
+    final regiao = InputSanitizer.sanitize(_regiaoController.text);
+
     setState(() => _loading = true);
 
     try {
       await UserService().updateProfile(
         uid: widget.user.uid,
-        displayName: _nomeController.text.trim(),
-        bio: _bioController.text.trim(),
-        region: _regiaoController.text.trim(),
+        displayName: nome,
+        bio: bio,
+        region: regiao,
       );
 
       if (mounted) {
@@ -180,12 +186,8 @@ class _EditFormState extends State<_EditForm> {
                     labelText: 'Nome de exibição *',
                     prefixIcon: Icon(Icons.person_outline),
                   ),
-                  validator: (v) {
-                    if (v == null || v.trim().isEmpty) {
-                      return 'O nome não pode ser vazio';
-                    }
-                    return null;
-                  },
+                  maxLength: 60,
+                  validator: (v) => InputSanitizer.validateName(v),
                 ),
                 const SizedBox(height: 16),
 

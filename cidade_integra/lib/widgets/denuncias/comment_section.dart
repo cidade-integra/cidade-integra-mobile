@@ -5,6 +5,7 @@ import '../../models/comment.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/comment_service.dart';
 import '../../utils/app_theme.dart';
+import '../../utils/input_sanitizer.dart';
 
 class CommentSection extends StatefulWidget {
   final String reportId;
@@ -29,10 +30,17 @@ class _CommentSectionState extends State<CommentSection> {
   }
 
   Future<void> _submit() async {
-    final text = _controller.text.trim();
+    final text = InputSanitizer.sanitize(_controller.text);
     if (text.length < _minLength) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Comentário deve ter pelo menos 5 caracteres.')),
+      );
+      return;
+    }
+
+    if (InputSanitizer.containsBlockedWords(text)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('O comentário contém palavras inadequadas.')),
       );
       return;
     }

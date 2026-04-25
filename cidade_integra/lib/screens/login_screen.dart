@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../utils/app_theme.dart';
 import '../utils/auth_error_mapper.dart';
+import '../utils/input_sanitizer.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -179,11 +180,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 hintText: 'seu@email.com',
                 prefixIcon: Icon(Icons.mail_outline),
               ),
-              validator: (v) {
-                if (v == null || v.trim().isEmpty) return 'Informe o email';
-                if (!v.contains('@')) return 'Email inválido';
-                return null;
-              },
+              validator: (v) => InputSanitizer.validateEmail(v),
             ),
             const SizedBox(height: 16),
 
