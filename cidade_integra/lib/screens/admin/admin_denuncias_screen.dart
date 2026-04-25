@@ -6,6 +6,7 @@ import '../../models/report.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/admin_service.dart';
 import '../../services/report_service.dart';
+import '../../utils/rate_limiter.dart';
 import '../../utils/app_theme.dart';
 import '../../services/export_service.dart';
 import '../../widgets/denuncias/status_badge.dart';
@@ -21,6 +22,7 @@ class _AdminDenunciasScreenState extends State<AdminDenunciasScreen> {
   final _reportService = ReportService();
   final _adminService = AdminService();
   final _searchController = TextEditingController();
+  final _debouncer = Debouncer();
 
   List<Report> _allReports = [];
   bool _loading = true;
@@ -36,6 +38,7 @@ class _AdminDenunciasScreenState extends State<AdminDenunciasScreen> {
   @override
   void dispose() {
     _searchController.dispose();
+    _debouncer.dispose();
     super.dispose();
   }
 
@@ -190,7 +193,9 @@ class _AdminDenunciasScreenState extends State<AdminDenunciasScreen> {
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
           child: TextField(
             controller: _searchController,
-            onChanged: (v) => setState(() => _searchQuery = v),
+            onChanged: (v) => _debouncer.call(() {
+              if (mounted) setState(() => _searchQuery = v);
+            }),
             decoration: InputDecoration(
               hintText: 'Buscar por título...',
               prefixIcon: const Icon(Icons.search),

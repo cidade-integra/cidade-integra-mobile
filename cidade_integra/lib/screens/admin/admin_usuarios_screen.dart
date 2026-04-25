@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../models/app_user.dart';
 import '../../services/admin_service.dart';
 import '../../services/export_service.dart';
+import '../../utils/rate_limiter.dart';
 import '../../utils/app_theme.dart';
 
 class AdminUsuariosScreen extends StatefulWidget {
@@ -15,6 +16,7 @@ class AdminUsuariosScreen extends StatefulWidget {
 class _AdminUsuariosScreenState extends State<AdminUsuariosScreen> {
   final _service = AdminService();
   final _searchController = TextEditingController();
+  final _debouncer = Debouncer();
 
   List<AppUser> _allUsers = [];
   bool _loading = true;
@@ -29,6 +31,7 @@ class _AdminUsuariosScreenState extends State<AdminUsuariosScreen> {
   @override
   void dispose() {
     _searchController.dispose();
+    _debouncer.dispose();
     super.dispose();
   }
 
@@ -175,7 +178,9 @@ class _AdminUsuariosScreenState extends State<AdminUsuariosScreen> {
           padding: const EdgeInsets.all(16),
           child: TextField(
             controller: _searchController,
-            onChanged: (v) => setState(() => _searchQuery = v),
+            onChanged: (v) => _debouncer.call(() {
+              if (mounted) setState(() => _searchQuery = v);
+            }),
             decoration: InputDecoration(
               hintText: 'Buscar por nome ou email...',
               prefixIcon: const Icon(Icons.search),

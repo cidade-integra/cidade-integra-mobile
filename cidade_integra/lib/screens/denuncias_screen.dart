@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../models/report.dart';
 import '../services/report_service.dart';
 import '../utils/app_theme.dart';
+import '../utils/rate_limiter.dart';
 import '../widgets/denuncias/card_denuncia.dart';
 
 class DenunciasScreen extends StatefulWidget {
@@ -15,6 +16,7 @@ class DenunciasScreen extends StatefulWidget {
 class _DenunciasScreenState extends State<DenunciasScreen> {
   final _reportService = ReportService();
   final _searchController = TextEditingController();
+  final _debouncer = Debouncer();
 
   List<Report> _allReports = [];
   bool _loading = true;
@@ -35,6 +37,7 @@ class _DenunciasScreenState extends State<DenunciasScreen> {
   @override
   void dispose() {
     _searchController.dispose();
+    _debouncer.dispose();
     super.dispose();
   }
 
@@ -153,8 +156,12 @@ class _DenunciasScreenState extends State<DenunciasScreen> {
       child: TextField(
         controller: _searchController,
         onChanged: (v) {
-          setState(() => _searchQuery = v);
-          _resetPage();
+          _debouncer.call(() {
+            if (mounted) {
+              setState(() => _searchQuery = v);
+              _resetPage();
+            }
+          });
         },
         decoration: InputDecoration(
           hintText: 'Buscar denúncias...',

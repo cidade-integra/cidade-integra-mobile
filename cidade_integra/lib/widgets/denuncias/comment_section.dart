@@ -6,6 +6,7 @@ import '../../providers/auth_provider.dart';
 import '../../services/comment_service.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/input_sanitizer.dart';
+import '../../utils/rate_limiter.dart';
 
 class CommentSection extends StatefulWidget {
   final String reportId;
@@ -47,6 +48,18 @@ class _CommentSectionState extends State<CommentSection> {
 
     final auth = context.read<AuthProvider>();
     if (!auth.isLoggedIn) return;
+
+    final rateKey = 'comment_${widget.reportId}';
+    if (!await RateLimiter.canPerform(rateKey, maxPerHour: 10)) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Limite de comentários por hora atingido.'),
+          ),
+        );
+      }
+      return;
+    }
 
     setState(() => _sending = true);
     try {
