@@ -11,6 +11,7 @@ import '../services/report_service.dart';
 import '../services/supabase_service.dart';
 import '../utils/app_theme.dart';
 import '../utils/input_sanitizer.dart';
+import '../utils/rate_limiter.dart';
 import '../widgets/denuncia_form/image_upload.dart';
 
 class NovaDenunciaScreen extends StatefulWidget {
@@ -64,6 +65,17 @@ class _NovaDenunciaScreenState extends State<NovaDenunciaScreen> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+
+    if (!await RateLimiter.canPerform('create_report', maxPerHour: 5)) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Limite de denúncias por hora atingido. Tente mais tarde.'),
+          ),
+        );
+      }
+      return;
+    }
 
     final title = InputSanitizer.sanitize(_tituloController.text);
     final description = InputSanitizer.sanitize(_descricaoController.text);
