@@ -48,6 +48,20 @@ app.*.map.json
 # Gerado por scripts/setup_env.sh — NUNCA commitar.
 env/secrets.json
 env/secrets.local.json
+env/*.txt
 *.env
 .env
 .env.local
+
+# Firebase artifacts gerados por flutterfire configure — contêm IDs/keys do projeto.
+# Restritos no GCP Console por package + SHA-1 + Firebase App Check, mas mesmo assim
+# nunca devem ir pro git.
+lib/firebase_options.dart
+**/google-services.json
+**/GoogleService-Info.plist
+
+# Android signing
+android/key.properties
+android/app/key.properties
+*.jks
+*.keystore
