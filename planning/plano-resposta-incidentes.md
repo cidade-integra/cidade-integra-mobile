@@ -1,6 +1,8 @@
 # Plano de Resposta a Incidentes de Segurança — Cidade Integra
 
-> Documento que define os procedimentos para detecção, contenção, erradicação e recuperação de incidentes de segurança.
+> Procedimentos para detecção, contenção, erradicação e recuperação de incidentes de segurança.
+>
+> **Documento principal:** [SDL — Ciclo de Vida do Desenvolvimento Seguro](./sdl.md)
 
 ---
 
@@ -8,95 +10,97 @@
 
 | Nível | Descrição | Exemplos | Tempo de Resposta |
 |-------|-----------|----------|-------------------|
-| **Crítico** | Comprometimento de dados pessoais ou acesso administrativo indevido | Vazamento de dados de usuários, elevação de privilégio, acesso ao Firestore sem autenticação | < 1 hora |
-| **Alto** | Funcionalidade de segurança comprometida | Bypass de autenticação, falha nas Firestore Rules, upload de arquivo malicioso executado | < 4 horas |
-| **Médio** | Abuso do sistema sem comprometimento de dados | Spam de denúncias em massa, DDoS no Firestore, uso indevido de API keys | < 24 horas |
-| **Baixo** | Vulnerabilidade identificada mas não explorada | Dependência com CVE conhecida, warning de segurança no `dart analyze` | < 72 horas |
+| **Crítico** | Comprometimento de dados pessoais ou acesso admin indevido | Vazamento de dados, elevação de privilégio, acesso ao Firestore sem autenticação | < 1 hora |
+| **Alto** | Funcionalidade de segurança comprometida | Bypass de autenticação, falha nas Firestore Rules, upload malicioso executado | < 4 horas |
+| **Médio** | Abuso do sistema sem comprometimento de dados | Spam em massa, DDoS no Firestore, uso indevido de API keys | < 24 horas |
+| **Baixo** | Vulnerabilidade identificada mas não explorada | Dependência com CVE, warning no `dart analyze` | < 72 horas |
 
 ---
 
-## 2. Fase 1 — Detecção
+## 2. Detecção
 
-| Canal | Ferramenta | O que detecta |
-|-------|-----------|---------------|
-| Crashes em produção | Firebase Crashlytics | Erros fatais, exceções não tratadas |
-| Uso anômalo | Firebase Analytics | Picos de requisições, padrões incomuns |
-| Acesso não autorizado | Firestore Audit Logs (`auditLogs`) | Alterações de status/role por admin |
-| Dependências | `flutter pub outdated` + `dart analyze` | Pacotes com vulnerabilidades conhecidas |
-| Relato de usuário | Email de suporte (suporte@cidadeintegra.com) | Bugs, comportamento suspeito |
+| Canal | Ferramenta | Status |
+|-------|-----------|--------|
+| Crashes em produção | Firebase Crashlytics (`FlutterError.onError` + `PlatformDispatcher`) | ✅ Integrado |
+| Métricas de uso | Firebase Analytics (eventos: login, register, create_report, etc.) | ✅ Integrado |
+| Proteção de backend | Firebase App Check (Play Integrity / App Attest) | ✅ Integrado |
+| Ações administrativas | Firestore `audit_logs` + Cloud Function `logAuditEvent` (imutável) | ✅ Integrado |
+| Dependências | Dependabot (semanal) + CI `flutter pub outdated` | ✅ Configurado |
+| Análise estática | CI `flutter analyze --fatal-infos --fatal-warnings` | ✅ Configurado |
+| Relato de usuário | suporte@cidadeintegra.com | ✅ Documentado |
 
 ---
 
-## 3. Fase 2 — Contenção
+## 3. Contenção
 
-### Ações imediatas por nível:
+### Por nível de severidade:
 
 **Crítico:**
 1. Atualizar Firestore Rules no Firebase Console para bloquear a operação comprometida.
-2. Revogar tokens de acesso (forçar re-autenticação) via Firebase Auth → "Revogar tokens de atualização".
-3. Desabilitar Google Sign-In temporariamente se comprometido.
+2. Revogar tokens via Firebase Auth → "Revogar tokens de atualização".
+3. Desabilitar método de login comprometido (Google Sign-In / email).
 4. Notificar equipe via canal de emergência.
 
 **Alto:**
-1. Atualizar Firestore Rules para restringir a funcionalidade afetada.
+1. Restringir Firestore Rules para a funcionalidade afetada.
 2. Rotacionar chaves do Supabase Storage se necessário.
 3. Bloquear usuários suspeitos via `users/{uid}.status = 'suspended'`.
 
 **Médio:**
-1. Ativar rate limiting mais restritivo via Firestore Rules.
-2. Bloquear IPs/usuários abusivos via Firebase App Check enforcement.
+1. Aumentar restrição do rate limiting via Firestore Rules.
+2. Reforçar App Check enforcement.
 
 **Baixo:**
-1. Registrar a vulnerabilidade no backlog.
-2. Atualizar dependências afetadas via `flutter pub upgrade`.
+1. Registrar no backlog (issue com label `security`).
+2. Atualizar dependências via `flutter pub upgrade` ou merge do Dependabot PR.
 
 ---
 
-## 4. Fase 3 — Erradicação
+## 4. Erradicação
 
-1. Identificar a causa raiz do incidente.
-2. Corrigir a vulnerabilidade no código-fonte.
-3. Atualizar Firestore Rules se a causa envolver regras permissivas.
-4. Atualizar dependências se a causa envolver CVE de pacotes.
-5. Criar hotfix em branch `hotfix/*` e publicar via `flutter build` + deploy nas lojas.
+1. Identificar causa raiz via Crashlytics + `audit_logs`.
+2. Corrigir no código-fonte (branch `hotfix/*`).
+3. Atualizar `firestore.rules` se envolver regras permissivas.
+4. Atualizar dependências se envolver CVE.
+5. Build release + deploy nas lojas.
 6. Rotacionar credenciais comprometidas:
-   - Firebase: rotacionar API keys no Console → Configurações → Geral.
-   - Supabase: rotacionar anon key no Dashboard → Settings → API.
+   - Firebase: Console → Configurações → Geral.
+   - Supabase: Dashboard → Settings → API.
    - Google Sign-In: rotacionar Web Client ID.
 
 ---
 
-## 5. Fase 4 — Recuperação
+## 5. Recuperação
 
-1. Restaurar dados do Firestore via backups automáticos (Firebase Console → Firestore → Importar/Exportar).
-2. Verificar integridade dos dados: comparar contagens de `reports`, `users`, `comments`.
-3. Reativar funcionalidades bloqueadas na fase de contenção.
-4. Monitorar métricas por 48 horas após a correção.
+1. Restaurar dados via backups automáticos do Firestore (Console → Importar/Exportar).
+2. Verificar integridade: contagens de `reports`, `users`, `comments`.
+3. Reativar funcionalidades bloqueadas na contenção.
+4. Monitorar Crashlytics e Analytics por 48 horas após a correção.
 5. Comunicar usuários afetados se houve exposição de dados pessoais (LGPD Art. 48).
 
 ---
 
-## 6. Fase 5 — Lições Aprendidas
+## 6. Lições Aprendidas
 
-1. Documentar o incidente com: data, descrição, impacto, causa raiz, ações tomadas, tempo de resolução.
-2. Atualizar o modelo de ameaças STRIDE no SDL (`planejamento-sld.md`).
+1. Documentar o incidente: data, descrição, impacto, causa raiz, ações, tempo de resolução.
+2. Atualizar modelo STRIDE no SDL (§2.2).
 3. Adicionar testes para a vulnerabilidade corrigida.
-4. Revisar e atualizar este plano de resposta se necessário.
-5. Conduzir retrospectiva com a equipe.
+4. Atualizar este plano se necessário.
+5. Retrospectiva com a equipe.
 
 ---
 
-## 7. Contatos de Emergência
+## 7. Contatos
 
 | Papel | Responsável | Canal |
 |-------|-------------|-------|
-| Tech Lead | Rafael Romano | GitHub / Slack |
-| Firebase Console | Equipe de desenvolvimento | console.firebase.google.com |
-| Supabase Dashboard | Equipe de desenvolvimento | supabase.com/dashboard |
+| Tech Lead | Rafael Romano | GitHub |
+| Firebase Console | Equipe | console.firebase.google.com |
+| Supabase Dashboard | Equipe | supabase.com/dashboard |
 
 ---
 
-## 8. Checklist Rápido (para impressão)
+## 8. Checklist Rápido
 
 - [ ] Incidente classificado (Crítico/Alto/Médio/Baixo)
 - [ ] Contenção aplicada (Rules/tokens/bloqueio)
@@ -105,6 +109,6 @@
 - [ ] Deploy realizado
 - [ ] Credenciais rotacionadas (se necessário)
 - [ ] Dados restaurados (se necessário)
-- [ ] Usuários notificados (se dados expostos)
+- [ ] Usuários notificados (se dados expostos — LGPD Art. 48)
 - [ ] Incidente documentado
 - [ ] SDL atualizado
