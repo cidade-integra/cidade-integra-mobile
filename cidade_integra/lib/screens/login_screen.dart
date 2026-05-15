@@ -60,7 +60,7 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _googleLoading = true);
     try {
       final account = await GoogleSignIn.instance.authenticate();
-      final googleAuth = await account.authentication;
+      final googleAuth = account.authentication;
       final credential = GoogleAuthProvider.credential(
         idToken: googleAuth.idToken,
       );
