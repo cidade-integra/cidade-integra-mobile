@@ -90,6 +90,6 @@ lib/
 
 ## Documentação
 
-- [`planning/planejamento-tasks.md`](planning/planejamento-tasks.md) — Plano completo de tasks (10 milestones)
-- [`planning/planejamento-sld.md`](planning/planejamento-sld.md) — Documento SDL (Security Development Lifecycle)
-- [`planning/planejamento-tasks-pendentes.md`](planning/planejamento-tasks-pendentes.md) — Tasks pendentes para v1.0
+- [`planning/sdl.md`](planning/sdl.md) — **SDL (Security Development Lifecycle)** — documento único de segurança
+- [`planning/plano-resposta-incidentes.md`](planning/plano-resposta-incidentes.md) — Plano de Resposta a Incidentes
+- [`planning/planejamento-tasks.md`](planning/planejamento-tasks.md) — Plano de desenvolvimento (10 milestones, ~40 tasks)
