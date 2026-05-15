@@ -24,9 +24,7 @@ class _ImageUploadWidgetState extends State<ImageUploadWidget> {
   Future<void> _pickImage(ImageSource source) async {
     if (_images.length >= widget.maxImages) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Máximo de ${widget.maxImages} imagens.'),
-        ),
+        SnackBar(content: Text('Máximo de ${widget.maxImages} imagens.')),
       );
       return;
     }
@@ -52,29 +50,30 @@ class _ImageUploadWidgetState extends State<ImageUploadWidget> {
   void _showPickerOptions() {
     showModalBottomSheet(
       context: context,
-      builder: (_) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.camera_alt_outlined),
-              title: const Text('Câmera'),
-              onTap: () {
-                Navigator.pop(context);
-                _pickImage(ImageSource.camera);
-              },
+      builder:
+          (_) => SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.camera_alt_outlined),
+                  title: const Text('Câmera'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _pickImage(ImageSource.camera);
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.photo_library_outlined),
+                  title: const Text('Galeria'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _pickImage(ImageSource.gallery);
+                  },
+                ),
+              ],
             ),
-            ListTile(
-              leading: const Icon(Icons.photo_library_outlined),
-              title: const Text('Galeria'),
-              onTap: () {
-                Navigator.pop(context);
-                _pickImage(ImageSource.gallery);
-              },
-            ),
-          ],
-        ),
-      ),
+          ),
     );
   }
 
@@ -105,10 +104,11 @@ class _ImageUploadWidgetState extends State<ImageUploadWidget> {
               scrollDirection: Axis.horizontal,
               itemCount: _images.length,
               separatorBuilder: (_, __) => const SizedBox(width: 12),
-              itemBuilder: (context, index) => _ImagePreview(
-                file: _images[index],
-                onRemove: () => _removeImage(index),
-              ),
+              itemBuilder:
+                  (context, index) => _ImagePreview(
+                    file: _images[index],
+                    onRemove: () => _removeImage(index),
+                  ),
             ),
           ),
 
@@ -121,9 +121,7 @@ class _ImageUploadWidgetState extends State<ImageUploadWidget> {
               onPressed: _showPickerOptions,
               icon: const Icon(Icons.add_a_photo_outlined, size: 20),
               label: Text(
-                _images.isEmpty
-                    ? 'Adicionar imagem'
-                    : 'Adicionar outra imagem',
+                _images.isEmpty ? 'Adicionar imagem' : 'Adicionar outra imagem',
               ),
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 14),
@@ -149,12 +147,7 @@ class _ImagePreview extends StatelessWidget {
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(10),
-          child: Image.file(
-            file,
-            width: 120,
-            height: 120,
-            fit: BoxFit.cover,
-          ),
+          child: Image.file(file, width: 120, height: 120, fit: BoxFit.cover),
         ),
         Positioned(
           top: 4,

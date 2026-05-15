@@ -103,81 +103,83 @@ class _EditFormState extends State<_EditForm> {
   void _confirmarDesativacao() {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Desativar Conta'),
-        content: const Text(
-          'Tem certeza que deseja desativar sua conta? '
-          'Você poderá reativá-la entrando em contato com o suporte.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(ctx);
-              await UserService().deactivateAccount(widget.user.uid);
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Conta desativada com sucesso.'),
-                  ),
-                );
-                context.go('/login');
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.vermelho,
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Desativar Conta'),
+            content: const Text(
+              'Tem certeza que deseja desativar sua conta? '
+              'Você poderá reativá-la entrando em contato com o suporte.',
             ),
-            child: const Text('Desativar'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Cancelar'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  Navigator.pop(ctx);
+                  await UserService().deactivateAccount(widget.user.uid);
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Conta desativada com sucesso.'),
+                      ),
+                    );
+                    context.go('/login');
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.vermelho,
+                ),
+                child: const Text('Desativar'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
   void _confirmarExclusao() {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Excluir Conta'),
-        content: const Text(
-          'Esta ação é IRREVERSÍVEL. Todos os seus dados pessoais serão removidos. '
-          'Suas denúncias permanecerão anonimizadas para fins de interesse público. '
-          'Seus comentários serão atribuídos a "Usuário removido".',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(ctx);
-              try {
-                await PrivacyService().deleteAccount(widget.user.uid);
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Conta excluída.')),
-                  );
-                  context.go('/');
-                }
-              } catch (e) {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Erro ao excluir: $e')),
-                  );
-                }
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.vermelho,
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Excluir Conta'),
+            content: const Text(
+              'Esta ação é IRREVERSÍVEL. Todos os seus dados pessoais serão removidos. '
+              'Suas denúncias permanecerão anonimizadas para fins de interesse público. '
+              'Seus comentários serão atribuídos a "Usuário removido".',
             ),
-            child: const Text('Excluir permanentemente'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Cancelar'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  Navigator.pop(ctx);
+                  try {
+                    await PrivacyService().deleteAccount(widget.user.uid);
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Conta excluída.')),
+                      );
+                      context.go('/');
+                    }
+                  } catch (e) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Erro ao excluir: $e')),
+                      );
+                    }
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.vermelho,
+                ),
+                child: const Text('Excluir permanentemente'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
@@ -265,16 +267,17 @@ class _EditFormState extends State<_EditForm> {
                   height: 48,
                   child: ElevatedButton.icon(
                     onPressed: _loading ? null : _salvar,
-                    icon: _loading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                        : const Icon(Icons.save_outlined, size: 20),
+                    icon:
+                        _loading
+                            ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                            : const Icon(Icons.save_outlined, size: 20),
                     label: Text(_loading ? 'Salvando...' : 'Salvar'),
                   ),
                 ),

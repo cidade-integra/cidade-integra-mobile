@@ -64,8 +64,15 @@ class _DetailContentState extends State<_DetailContent> {
       return;
     }
     try {
-      final saved = await _savedService.isSaved(auth.user!.uid, widget.report.id);
-      if (mounted) setState(() { _isSaved = saved; _checkingSaved = false; });
+      final saved = await _savedService.isSaved(
+        auth.user!.uid,
+        widget.report.id,
+      );
+      if (mounted)
+        setState(() {
+          _isSaved = saved;
+          _checkingSaved = false;
+        });
     } catch (_) {
       if (mounted) setState(() => _checkingSaved = false);
     }
@@ -94,9 +101,9 @@ class _DetailContentState extends State<_DetailContent> {
       await AnalyticsService.logSaveReport(widget.report.id);
       if (mounted) {
         setState(() => _isSaved = true);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Denúncia salva!')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Denúncia salva!')));
       }
     }
   }
@@ -124,13 +131,19 @@ class _DetailContentState extends State<_DetailContent> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.arrow_back, size: 16,
-                            color: Colors.white.withValues(alpha: 0.8)),
+                        Icon(
+                          Icons.arrow_back,
+                          size: 16,
+                          color: Colors.white.withValues(alpha: 0.8),
+                        ),
                         const SizedBox(width: 6),
-                        Text('Voltar',
-                            style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.8),
-                                fontSize: 13)),
+                        Text(
+                          'Voltar',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.8),
+                            fontSize: 13,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -162,7 +175,9 @@ class _DetailContentState extends State<_DetailContent> {
                   const SizedBox(width: 10),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 4),
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(12),
@@ -170,12 +185,19 @@ class _DetailContentState extends State<_DetailContent> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(report.category.icon,
-                            size: 14, color: Colors.white70),
+                        Icon(
+                          report.category.icon,
+                          size: 14,
+                          color: Colors.white70,
+                        ),
                         const SizedBox(width: 4),
-                        Text(report.category.label,
-                            style: const TextStyle(
-                                fontSize: 12, color: Colors.white70)),
+                        Text(
+                          report.category.label,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.white70,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -221,9 +243,10 @@ class _DetailContentState extends State<_DetailContent> {
               children: [
                 _InfoItem(
                   icon: Icons.location_on_outlined,
-                  label: report.location.address.isNotEmpty
-                      ? report.location.address
-                      : 'Localização não informada',
+                  label:
+                      report.location.address.isNotEmpty
+                          ? report.location.address
+                          : 'Localização não informada',
                 ),
                 _InfoItem(
                   icon: Icons.calendar_today_outlined,
@@ -231,14 +254,16 @@ class _DetailContentState extends State<_DetailContent> {
                 ),
                 _InfoItem(
                   icon: Icons.person_outline,
-                  label: report.isAnonymous
-                      ? 'Denúncia anônima'
-                      : 'Reportado por cidadão',
+                  label:
+                      report.isAnonymous
+                          ? 'Denúncia anônima'
+                          : 'Reportado por cidadão',
                 ),
                 if (report.resolvedAt != null)
                   _InfoItem(
                     icon: Icons.check_circle_outline,
-                    label: 'Resolvida em ${dateFormat.format(report.resolvedAt!)}',
+                    label:
+                        'Resolvida em ${dateFormat.format(report.resolvedAt!)}',
                     color: AppColors.verde,
                   ),
               ],
@@ -284,8 +309,10 @@ class _InfoItem extends StatelessWidget {
           Icon(icon, size: 18, color: c),
           const SizedBox(width: 10),
           Expanded(
-            child: Text(label,
-                style: TextStyle(fontSize: 13, color: c, height: 1.3)),
+            child: Text(
+              label,
+              style: TextStyle(fontSize: 13, color: c, height: 1.3),
+            ),
           ),
         ],
       ),
@@ -313,18 +340,23 @@ class _ImageGalleryState extends State<_ImageGallery> {
           child: PageView.builder(
             itemCount: widget.urls.length,
             onPageChanged: (i) => setState(() => _current = i),
-            itemBuilder: (_, i) => Image.network(
-              widget.urls[i],
-              fit: BoxFit.cover,
-              width: double.infinity,
-              errorBuilder: (_, __, ___) => Container(
-                color: Colors.grey.shade200,
-                child: const Center(
-                  child:
-                      Icon(Icons.broken_image, size: 48, color: Colors.grey),
+            itemBuilder:
+                (_, i) => Image.network(
+                  widget.urls[i],
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  errorBuilder:
+                      (_, __, ___) => Container(
+                        color: Colors.grey.shade200,
+                        child: const Center(
+                          child: Icon(
+                            Icons.broken_image,
+                            size: 48,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ),
                 ),
-              ),
-            ),
           ),
         ),
         if (widget.urls.length > 1)
@@ -362,15 +394,20 @@ class _NotFoundState extends StatelessWidget {
           children: [
             Icon(Icons.search_off, size: 64, color: AppColors.textoSecundario),
             const SizedBox(height: 16),
-            Text('Denúncia não encontrada',
-                style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.azul)),
+            Text(
+              'Denúncia não encontrada',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: AppColors.azul,
+              ),
+            ),
             const SizedBox(height: 8),
-            Text('A denúncia que você procura não existe ou foi removida.',
-                style: TextStyle(color: AppColors.textoSecundario),
-                textAlign: TextAlign.center),
+            Text(
+              'A denúncia que você procura não existe ou foi removida.',
+              style: TextStyle(color: AppColors.textoSecundario),
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 24),
             OutlinedButton.icon(
               onPressed: () => context.go('/denuncias'),
@@ -396,12 +433,15 @@ class _ErrorState extends StatelessWidget {
         children: [
           Icon(Icons.error_outline, size: 48, color: AppColors.vermelho),
           const SizedBox(height: 12),
-          Text('Erro ao carregar denúncia.',
-              style: TextStyle(color: AppColors.textoSecundario)),
+          Text(
+            'Erro ao carregar denúncia.',
+            style: TextStyle(color: AppColors.textoSecundario),
+          ),
           const SizedBox(height: 16),
           OutlinedButton(
-              onPressed: onRetry,
-              child: const Text('Tentar novamente')),
+            onPressed: onRetry,
+            child: const Text('Tentar novamente'),
+          ),
         ],
       ),
     );

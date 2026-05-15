@@ -35,10 +35,7 @@ void main() async {
 
   await initializeDateFormatting('pt_BR');
 
-  await Supabase.initialize(
-    url: Env.supabaseUrl,
-    anonKey: Env.supabaseAnonKey,
-  );
+  await Supabase.initialize(url: Env.supabaseUrl, anonKey: Env.supabaseAnonKey);
 
   await GoogleSignIn.instance.initialize(
     serverClientId: Env.googleServerClientId,

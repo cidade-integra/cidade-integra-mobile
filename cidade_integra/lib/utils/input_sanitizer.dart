@@ -19,9 +19,24 @@ class InputSanitizer {
   ];
 
   static const blockedWords = [
-    'idiota', 'imbecil', 'burro', 'otario', 'otária', 'babaca',
-    'retardado', 'retardada', 'vagabundo', 'vagabunda', 'lixo humano',
-    'merda', 'porra', 'caralho', 'puta', 'fdp', 'vsf', 'vtnc',
+    'idiota',
+    'imbecil',
+    'burro',
+    'otario',
+    'otária',
+    'babaca',
+    'retardado',
+    'retardada',
+    'vagabundo',
+    'vagabunda',
+    'lixo humano',
+    'merda',
+    'porra',
+    'caralho',
+    'puta',
+    'fdp',
+    'vsf',
+    'vtnc',
   ];
 
   /// Remove HTML tags, script patterns, control chars and normalizes whitespace.
@@ -67,7 +82,8 @@ class InputSanitizer {
 
   /// Sanitizes and validates a name field. Returns error message or null.
   static String? validateName(String? value, {int min = 3, int max = 60}) {
-    if (value == null || value.trim().isEmpty) return 'Preencha seu nome completo';
+    if (value == null || value.trim().isEmpty)
+      return 'Preencha seu nome completo';
     final clean = sanitize(value);
     if (clean.length < min) return 'Mínimo $min caracteres';
     if (clean.length > max) return 'Máximo $max caracteres';

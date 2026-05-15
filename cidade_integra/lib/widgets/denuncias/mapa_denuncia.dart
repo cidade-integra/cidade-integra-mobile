@@ -100,7 +100,11 @@ class MapaFallback extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(Icons.location_on_outlined, size: 24, color: AppColors.textoSecundario),
+          Icon(
+            Icons.location_on_outlined,
+            size: 24,
+            color: AppColors.textoSecundario,
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Text(

@@ -13,8 +13,10 @@ class CommentService {
     return _commentsRef(reportId)
         .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((doc) => Comment.fromFirestore(doc)).toList());
+        .map(
+          (snapshot) =>
+              snapshot.docs.map((doc) => Comment.fromFirestore(doc)).toList(),
+        );
   }
 
   Future<void> addComment(String reportId, Comment comment) async {

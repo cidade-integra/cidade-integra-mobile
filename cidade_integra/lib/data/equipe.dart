@@ -69,6 +69,7 @@ const students = [
         'positivamente a sociedade. Fazer parte do desenvolvimento desse projeto é algo de que '
         'me orgulho profundamente.',
     github: 'https://github.com/VictorHugoTesti',
-    linkedin: 'https://www.linkedin.com/in/victor-hugo-malipense-testi-994297324/',
+    linkedin:
+        'https://www.linkedin.com/in/victor-hugo-malipense-testi-994297324/',
   ),
 ];

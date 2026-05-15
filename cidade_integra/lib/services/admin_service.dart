@@ -8,7 +8,13 @@ class AdminService {
 
   Future<Map<String, int>> getReportStats() async {
     final snapshot = await _reports.get();
-    final stats = {'total': 0, 'pending': 0, 'review': 0, 'resolved': 0, 'rejected': 0};
+    final stats = {
+      'total': 0,
+      'pending': 0,
+      'review': 0,
+      'resolved': 0,
+      'rejected': 0,
+    };
 
     for (final doc in snapshot.docs) {
       stats['total'] = (stats['total'] ?? 0) + 1;
@@ -24,10 +30,11 @@ class AdminService {
   }
 
   Future<List<Report>> getRecentReports({int limit = 5}) async {
-    final snapshot = await _reports
-        .orderBy('createdAt', descending: true)
-        .limit(limit)
-        .get();
+    final snapshot =
+        await _reports
+            .orderBy('createdAt', descending: true)
+            .limit(limit)
+            .get();
     return snapshot.docs.map((doc) => Report.fromFirestore(doc)).toList();
   }
 

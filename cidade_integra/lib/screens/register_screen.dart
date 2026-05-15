@@ -39,9 +39,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     if (!_aceitouTermos) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Você precisa aceitar os termos de uso.'),
-        ),
+        const SnackBar(content: Text('Você precisa aceitar os termos de uso.')),
       );
       return;
     }
@@ -61,26 +59,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
           .collection('users')
           .doc(cred.user!.uid)
           .set({
-        'displayName': nome,
-        'email': cred.user!.email,
-        'photoURL': '',
-        'role': 'user',
-        'createdAt': DateTime.now().toIso8601String(),
-        'score': 0,
-        'reportCount': 0,
-        'lastLoginAt': DateTime.now().toIso8601String(),
-        'region': '',
-        'verified': false,
-        'bio': '',
-        'status': 'active',
-      });
+            'displayName': nome,
+            'email': cred.user!.email,
+            'photoURL': '',
+            'role': 'user',
+            'createdAt': DateTime.now().toIso8601String(),
+            'score': 0,
+            'reportCount': 0,
+            'lastLoginAt': DateTime.now().toIso8601String(),
+            'region': '',
+            'verified': false,
+            'bio': '',
+            'status': 'active',
+          });
 
       await cred.user!.sendEmailVerification();
       await AnalyticsService.logRegister();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Cadastro realizado! Verifique seu e-mail para ativar a conta.'),
+            content: Text(
+              'Cadastro realizado! Verifique seu e-mail para ativar a conta.',
+            ),
             duration: Duration(seconds: 5),
           ),
         );
@@ -88,16 +88,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
       }
     } on FirebaseAuthException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(mapAuthError(e.code))),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(mapAuthError(e.code))));
       }
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Erro inesperado. Tente novamente.'),
-          ),
+          const SnackBar(content: Text('Erro inesperado. Tente novamente.')),
         );
       }
     } finally {
@@ -135,7 +133,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
             color: AppColors.verde.withValues(alpha: 0.12),
             shape: BoxShape.circle,
           ),
-          child: Icon(Icons.person_add_outlined, size: 36, color: AppColors.verde),
+          child: Icon(
+            Icons.person_add_outlined,
+            size: 36,
+            color: AppColors.verde,
+          ),
         ),
         const SizedBox(height: 16),
         Text(
@@ -159,9 +161,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Widget _buildCard() {
-    final senhaMatch = _confirmarSenhaController.text.isNotEmpty &&
+    final senhaMatch =
+        _confirmarSenhaController.text.isNotEmpty &&
         _senhaController.text == _confirmarSenhaController.text;
-    final senhaMismatch = _confirmarSenhaController.text.isNotEmpty &&
+    final senhaMismatch =
+        _confirmarSenhaController.text.isNotEmpty &&
         _senhaController.text != _confirmarSenhaController.text;
 
     return Container(
@@ -235,13 +239,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ? Icons.visibility_off_outlined
                         : Icons.visibility_outlined,
                   ),
-                  onPressed: () =>
-                      setState(() => _obscurePassword = !_obscurePassword),
+                  onPressed:
+                      () =>
+                          setState(() => _obscurePassword = !_obscurePassword),
                 ),
               ),
               validator: (v) {
                 if (v == null || v.isEmpty) return 'Informe a senha';
-                if (v.length < 6) return 'A senha deve ter pelo menos 6 caracteres';
+                if (v.length < 6)
+                  return 'A senha deve ter pelo menos 6 caracteres';
                 return null;
               },
             ),
@@ -256,18 +262,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ? Icons.check_circle
                           : Icons.cancel,
                       size: 14,
-                      color: _senhaController.text.length >= 6
-                          ? AppColors.verde
-                          : AppColors.vermelho,
+                      color:
+                          _senhaController.text.length >= 6
+                              ? AppColors.verde
+                              : AppColors.vermelho,
                     ),
                     const SizedBox(width: 6),
                     Text(
                       'A senha deve ter 6 caracteres ou mais',
                       style: TextStyle(
                         fontSize: 12,
-                        color: _senhaController.text.length >= 6
-                            ? AppColors.verde
-                            : AppColors.textoSecundario,
+                        color:
+                            _senhaController.text.length >= 6
+                                ? AppColors.verde
+                                : AppColors.textoSecundario,
                       ),
                     ),
                   ],
@@ -291,13 +299,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ? Icons.visibility_off_outlined
                         : Icons.visibility_outlined,
                   ),
-                  onPressed: () =>
-                      setState(() => _obscureConfirm = !_obscureConfirm),
+                  onPressed:
+                      () => setState(() => _obscureConfirm = !_obscureConfirm),
                 ),
               ),
               validator: (v) {
                 if (v == null || v.isEmpty) return 'Confirme a senha';
-                if (v != _senhaController.text) return 'As senhas não coincidem';
+                if (v != _senhaController.text)
+                  return 'As senhas não coincidem';
                 return null;
               },
             ),
@@ -319,9 +328,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           : 'As senhas não são iguais',
                       style: TextStyle(
                         fontSize: 12,
-                        color: senhaMatch
-                            ? AppColors.verde
-                            : AppColors.vermelho,
+                        color:
+                            senhaMatch ? AppColors.verde : AppColors.vermelho,
                       ),
                     ),
                   ],
@@ -341,8 +349,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 Expanded(
                   child: GestureDetector(
-                    onTap: () =>
-                        setState(() => _aceitouTermos = !_aceitouTermos),
+                    onTap:
+                        () => setState(() => _aceitouTermos = !_aceitouTermos),
                     child: Padding(
                       padding: const EdgeInsets.only(top: 4),
                       child: Text.rich(
@@ -383,16 +391,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
               height: 48,
               child: ElevatedButton(
                 onPressed: _loading ? null : _registrar,
-                child: _loading
-                    ? const SizedBox(
-                        height: 22,
-                        width: 22,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Text('Cadastrar'),
+                child:
+                    _loading
+                        ? const SizedBox(
+                          height: 22,
+                          width: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                        : const Text('Cadastrar'),
               ),
             ),
             const SizedBox(height: 20),

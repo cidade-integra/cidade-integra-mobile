@@ -41,10 +41,7 @@ class AppFooter extends StatelessWidget {
           const SizedBox(height: 24),
 
           // --- Descrição ---
-          SvgPicture.asset(
-            'assets/images/logotipo-sem-borda.svg',
-            height: 40,
-          ),
+          SvgPicture.asset('assets/images/logotipo-sem-borda.svg', height: 40),
           const SizedBox(height: 8),
           Text(
             'Uma plataforma para cidadãos reportarem problemas urbanos e contribuírem para uma cidade melhor.',

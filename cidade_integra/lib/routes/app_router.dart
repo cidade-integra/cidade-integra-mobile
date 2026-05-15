@@ -59,68 +59,96 @@ GoRouter buildRouter(AuthProvider auth) {
         routes: [
           GoRoute(
             path: '/',
-            pageBuilder: (context, state) => const NoTransitionPage(child: HomeScreen()),
+            pageBuilder:
+                (context, state) => const NoTransitionPage(child: HomeScreen()),
           ),
           GoRoute(
             path: '/denuncias',
-            pageBuilder: (context, state) => const NoTransitionPage(child: DenunciasScreen()),
+            pageBuilder:
+                (context, state) =>
+                    const NoTransitionPage(child: DenunciasScreen()),
           ),
           GoRoute(
             path: '/denuncias/:id',
             pageBuilder: (context, state) {
               final id = state.pathParameters['id']!;
-              return NoTransitionPage(child: DenunciaDetalhesScreen(reportId: id));
+              return NoTransitionPage(
+                child: DenunciaDetalhesScreen(reportId: id),
+              );
             },
           ),
           GoRoute(
             path: '/login',
-            pageBuilder: (context, state) => const NoTransitionPage(child: LoginScreen()),
+            pageBuilder:
+                (context, state) =>
+                    const NoTransitionPage(child: LoginScreen()),
           ),
           GoRoute(
             path: '/registro',
-            pageBuilder: (context, state) => const NoTransitionPage(child: RegisterScreen()),
+            pageBuilder:
+                (context, state) =>
+                    const NoTransitionPage(child: RegisterScreen()),
           ),
           GoRoute(
             path: '/recuperar-senha',
-            pageBuilder: (context, state) => const NoTransitionPage(child: RecuperarSenhaScreen()),
+            pageBuilder:
+                (context, state) =>
+                    const NoTransitionPage(child: RecuperarSenhaScreen()),
           ),
           GoRoute(
             path: '/sobre',
-            pageBuilder: (context, state) => const NoTransitionPage(child: SobreScreen()),
+            pageBuilder:
+                (context, state) =>
+                    const NoTransitionPage(child: SobreScreen()),
           ),
           GoRoute(
             path: '/duvidas',
-            pageBuilder: (context, state) => const NoTransitionPage(child: FaqScreen()),
+            pageBuilder:
+                (context, state) => const NoTransitionPage(child: FaqScreen()),
           ),
           GoRoute(
             path: '/nova-denuncia',
-            pageBuilder: (context, state) => const NoTransitionPage(child: NovaDenunciaScreen()),
+            pageBuilder:
+                (context, state) =>
+                    const NoTransitionPage(child: NovaDenunciaScreen()),
           ),
           GoRoute(
             path: '/perfil',
-            pageBuilder: (context, state) => const NoTransitionPage(child: PerfilScreen()),
+            pageBuilder:
+                (context, state) =>
+                    const NoTransitionPage(child: PerfilScreen()),
           ),
           GoRoute(
             path: '/perfil/editar',
-            pageBuilder: (context, state) => const NoTransitionPage(child: EditarPerfilScreen()),
+            pageBuilder:
+                (context, state) =>
+                    const NoTransitionPage(child: EditarPerfilScreen()),
           ),
           GoRoute(
             path: '/admin',
-            pageBuilder: (context, state) => const NoTransitionPage(child: AdminDashboardScreen()),
+            pageBuilder:
+                (context, state) =>
+                    const NoTransitionPage(child: AdminDashboardScreen()),
           ),
           GoRoute(
             path: '/admin/denuncias',
-            pageBuilder: (context, state) => const NoTransitionPage(child: AdminDenunciasScreen()),
+            pageBuilder:
+                (context, state) =>
+                    const NoTransitionPage(child: AdminDenunciasScreen()),
           ),
           GoRoute(
             path: '/admin/usuarios',
-            pageBuilder: (context, state) => const NoTransitionPage(child: AdminUsuariosScreen()),
+            pageBuilder:
+                (context, state) =>
+                    const NoTransitionPage(child: AdminUsuariosScreen()),
           ),
         ],
       ),
       GoRoute(
         path: '/acesso-negado',
-        pageBuilder: (context, state) => const NoTransitionPage(child: AccessDeniedScreen()),
+        pageBuilder:
+            (context, state) =>
+                const NoTransitionPage(child: AccessDeniedScreen()),
       ),
     ],
   );

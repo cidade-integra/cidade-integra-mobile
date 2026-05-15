@@ -59,21 +59,26 @@ class HowItWorksSection extends StatelessWidget {
               ),
               children: [
                 const TextSpan(
-                    text:
-                        'Reportar problemas urbanos nunca foi tão fácil. Com apenas alguns passos, você pode contribuir para '),
+                  text:
+                      'Reportar problemas urbanos nunca foi tão fácil. Com apenas alguns passos, você pode contribuir para ',
+                ),
                 TextSpan(
                   text: 'melhorar sua cidade!',
                   style: TextStyle(
-                      color: AppColors.azul, fontWeight: FontWeight.w700),
+                    color: AppColors.azul,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ],
             ),
           ),
           const SizedBox(height: 28),
-          ...steps.map((step) => Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: _StepCard(data: step),
-              )),
+          ...steps.map(
+            (step) => Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: _StepCard(data: step),
+            ),
+          ),
         ],
       ),
     );

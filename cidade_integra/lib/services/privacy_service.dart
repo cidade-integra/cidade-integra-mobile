@@ -10,19 +10,22 @@ class PrivacyService {
 
   Future<void> exportUserData(String uid) async {
     final userDoc = await _firestore.collection('users').doc(uid).get();
-    final reportsSnap = await _firestore
-        .collection('reports')
-        .where('userId', isEqualTo: uid)
-        .get();
-    final savedSnap = await _firestore
-        .collection('users')
-        .doc(uid)
-        .collection('denunciasSalvas')
-        .get();
+    final reportsSnap =
+        await _firestore
+            .collection('reports')
+            .where('userId', isEqualTo: uid)
+            .get();
+    final savedSnap =
+        await _firestore
+            .collection('users')
+            .doc(uid)
+            .collection('denunciasSalvas')
+            .get();
 
     final data = {
       'profile': userDoc.data(),
-      'reports': reportsSnap.docs.map((d) => {'id': d.id, ...d.data()}).toList(),
+      'reports':
+          reportsSnap.docs.map((d) => {'id': d.id, ...d.data()}).toList(),
       'savedReports': savedSnap.docs.map((d) => d.id).toList(),
       'exportedAt': DateTime.now().toIso8601String(),
     };
@@ -43,10 +46,11 @@ class PrivacyService {
   Future<void> deleteAccount(String uid) async {
     final batch = _firestore.batch();
 
-    final commentsSnap = await _firestore
-        .collectionGroup('comments')
-        .where('authorId', isEqualTo: uid)
-        .get();
+    final commentsSnap =
+        await _firestore
+            .collectionGroup('comments')
+            .where('authorId', isEqualTo: uid)
+            .get();
     for (final doc in commentsSnap.docs) {
       batch.update(doc.reference, {
         'author': 'Usuário removido',
@@ -54,11 +58,12 @@ class PrivacyService {
       });
     }
 
-    final savedSnap = await _firestore
-        .collection('users')
-        .doc(uid)
-        .collection('denunciasSalvas')
-        .get();
+    final savedSnap =
+        await _firestore
+            .collection('users')
+            .doc(uid)
+            .collection('denunciasSalvas')
+            .get();
     for (final doc in savedSnap.docs) {
       batch.delete(doc.reference);
     }

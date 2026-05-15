@@ -3,7 +3,14 @@ import 'package:flutter/material.dart';
 
 enum ReportStatus { pending, review, resolved, rejected }
 
-enum ReportCategory { buracos, iluminacao, lixo, vazamentos, areasVerdes, outros }
+enum ReportCategory {
+  buracos,
+  iluminacao,
+  lixo,
+  vazamentos,
+  areasVerdes,
+  outros,
+}
 
 class ReportLocation {
   final double? latitude;
@@ -107,8 +114,7 @@ class Report {
       'status': status.name,
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': Timestamp.fromDate(updatedAt),
-      'resolvedAt':
-          resolvedAt != null ? Timestamp.fromDate(resolvedAt!) : null,
+      'resolvedAt': resolvedAt != null ? Timestamp.fromDate(resolvedAt!) : null,
     };
   }
 

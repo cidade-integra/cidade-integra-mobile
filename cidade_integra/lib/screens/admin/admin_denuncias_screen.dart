@@ -46,7 +46,11 @@ class _AdminDenunciasScreenState extends State<AdminDenunciasScreen> {
     setState(() => _loading = true);
     try {
       final reports = await _reportService.getReports();
-      if (mounted) setState(() { _allReports = reports; _loading = false; });
+      if (mounted)
+        setState(() {
+          _allReports = reports;
+          _loading = false;
+        });
     } catch (_) {
       if (mounted) setState(() => _loading = false);
     }
@@ -71,74 +75,85 @@ class _AdminDenunciasScreenState extends State<AdminDenunciasScreen> {
 
     showDialog(
       context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) => AlertDialog(
-          title: const Text('Alterar Status'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                report.title,
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.azul,
+      builder:
+          (ctx) => StatefulBuilder(
+            builder:
+                (ctx, setDialogState) => AlertDialog(
+                  title: const Text('Alterar Status'),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        report.title,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.azul,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      DropdownButtonFormField<String>(
+                        decoration: const InputDecoration(
+                          labelText: 'Novo Status',
+                        ),
+                        items:
+                            ReportStatus.values
+                                .map(
+                                  (s) => DropdownMenuItem(
+                                    value: s.name,
+                                    child: Text(s.label),
+                                  ),
+                                )
+                                .toList(),
+                        onChanged:
+                            (v) => setDialogState(() => selectedStatus = v),
+                      ),
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: commentController,
+                        maxLines: 3,
+                        onChanged: (v) => setDialogState(() => commentText = v),
+                        decoration: const InputDecoration(
+                          labelText: 'Comentário *',
+                          hintText: 'Motivo da alteração...',
+                        ),
+                      ),
+                    ],
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      child: const Text('Cancelar'),
+                    ),
+                    ElevatedButton(
+                      onPressed:
+                          selectedStatus != null &&
+                                  commentText.trim().isNotEmpty
+                              ? () async {
+                                Navigator.pop(ctx);
+                                final auth = context.read<AuthProvider>();
+                                await _adminService.updateReportStatusWithAudit(
+                                  reportId: report.id,
+                                  newStatus: selectedStatus!,
+                                  comment: commentText.trim(),
+                                  userId: auth.user!.uid,
+                                  userName: auth.user!.displayName ?? 'Admin',
+                                );
+                                if (mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Status atualizado.'),
+                                    ),
+                                  );
+                                  _load();
+                                }
+                              }
+                              : null,
+                      child: const Text('Confirmar'),
+                    ),
+                  ],
                 ),
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                decoration: const InputDecoration(labelText: 'Novo Status'),
-                items: ReportStatus.values
-                    .map((s) => DropdownMenuItem(
-                          value: s.name,
-                          child: Text(s.label),
-                        ))
-                    .toList(),
-                onChanged: (v) => setDialogState(() => selectedStatus = v),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: commentController,
-                maxLines: 3,
-                onChanged: (v) => setDialogState(() => commentText = v),
-                decoration: const InputDecoration(
-                  labelText: 'Comentário *',
-                  hintText: 'Motivo da alteração...',
-                ),
-              ),
-            ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancelar'),
-            ),
-            ElevatedButton(
-              onPressed: selectedStatus != null &&
-                      commentText.trim().isNotEmpty
-                  ? () async {
-                      Navigator.pop(ctx);
-                      final auth = context.read<AuthProvider>();
-                      await _adminService.updateReportStatusWithAudit(
-                        reportId: report.id,
-                        newStatus: selectedStatus!,
-                        comment: commentText.trim(),
-                        userId: auth.user!.uid,
-                        userName: auth.user!.displayName ?? 'Admin',
-                      );
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Status atualizado.')),
-                        );
-                        _load();
-                      }
-                    }
-                  : null,
-              child: const Text('Confirmar'),
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -174,16 +189,17 @@ class _AdminDenunciasScreenState extends State<AdminDenunciasScreen> {
               IconButton(
                 icon: const Icon(Icons.file_download, color: Colors.white),
                 tooltip: 'Exportar CSV',
-                onPressed: _allReports.isEmpty
-                    ? null
-                    : () async {
-                        await ExportService().exportReportsCSV(_allReports);
-                        if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('CSV exportado.')),
-                          );
-                        }
-                      },
+                onPressed:
+                    _allReports.isEmpty
+                        ? null
+                        : () async {
+                          await ExportService().exportReportsCSV(_allReports);
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('CSV exportado.')),
+                            );
+                          }
+                        },
               ),
             ],
           ),
@@ -193,21 +209,23 @@ class _AdminDenunciasScreenState extends State<AdminDenunciasScreen> {
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
           child: TextField(
             controller: _searchController,
-            onChanged: (v) => _debouncer.call(() {
-              if (mounted) setState(() => _searchQuery = v);
-            }),
+            onChanged:
+                (v) => _debouncer.call(() {
+                  if (mounted) setState(() => _searchQuery = v);
+                }),
             decoration: InputDecoration(
               hintText: 'Buscar por título...',
               prefixIcon: const Icon(Icons.search),
-              suffixIcon: _searchQuery.isNotEmpty
-                  ? IconButton(
-                      icon: const Icon(Icons.clear),
-                      onPressed: () {
-                        _searchController.clear();
-                        setState(() => _searchQuery = '');
-                      },
-                    )
-                  : null,
+              suffixIcon:
+                  _searchQuery.isNotEmpty
+                      ? IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() => _searchQuery = '');
+                        },
+                      )
+                      : null,
             ),
           ),
         ),
@@ -229,8 +247,7 @@ class _AdminDenunciasScreenState extends State<AdminDenunciasScreen> {
                   FilterChip(
                     label: Text(s.label),
                     selected: _statusFilter == s.name,
-                    onSelected: (_) =>
-                        setState(() => _statusFilter = s.name),
+                    onSelected: (_) => setState(() => _statusFilter = s.name),
                     selectedColor: s.color.withValues(alpha: 0.15),
                   ),
                   const SizedBox(width: 6),
@@ -272,7 +289,10 @@ class _AdminDenunciasScreenState extends State<AdminDenunciasScreen> {
               ),
               subtitle: Text(
                 '${r.category.label} · ${dateFormat.format(r.createdAt)}',
-                style: TextStyle(fontSize: 12, color: AppColors.textoSecundario),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: AppColors.textoSecundario,
+                ),
               ),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,

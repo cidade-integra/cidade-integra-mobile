@@ -3,7 +3,11 @@ import 'package:cidade_integra/models/app_user.dart';
 import 'package:cidade_integra/utils/badge_rules.dart';
 
 void main() {
-  AppUser _makeUser({int score = 0, int reportCount = 0, bool verified = false}) {
+  AppUser _makeUser({
+    int score = 0,
+    int reportCount = 0,
+    bool verified = false,
+  }) {
     return AppUser(
       uid: 'test',
       displayName: 'Test',

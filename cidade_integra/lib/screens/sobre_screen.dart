@@ -28,10 +28,7 @@ class _HeroSobre extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            AppColors.verde.withValues(alpha: 0.1),
-            Colors.transparent,
-          ],
+          colors: [AppColors.verde.withValues(alpha: 0.1), Colors.transparent],
         ),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
@@ -121,10 +118,12 @@ class _TeamSection extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-          ...students.map((member) => Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: StudentCard(member: member),
-              )),
+          ...students.map(
+            (member) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: StudentCard(member: member),
+            ),
+          ),
         ],
       ),
     );
@@ -138,17 +137,20 @@ class _MissionSection extends StatelessWidget {
       _MissionData(
         icon: Icons.link,
         title: 'Conectar',
-        description: 'Criar uma ponte eficiente entre cidadãos e órgãos responsáveis.',
+        description:
+            'Criar uma ponte eficiente entre cidadãos e órgãos responsáveis.',
       ),
       _MissionData(
         icon: Icons.handshake,
         title: 'Facilitar',
-        description: 'Simplificar o processo de denúncia e acompanhamento de problemas urbanos.',
+        description:
+            'Simplificar o processo de denúncia e acompanhamento de problemas urbanos.',
       ),
       _MissionData(
         icon: Icons.bolt,
         title: 'Transformar',
-        description: 'Impactar positivamente a qualidade de vida nas cidades através da tecnologia.',
+        description:
+            'Impactar positivamente a qualidade de vida nas cidades através da tecnologia.',
       ),
     ];
 
@@ -176,44 +178,50 @@ class _MissionSection extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 28),
-          ...missions.map((m) => Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: AppColors.verde.withValues(alpha: 0.2),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(m.icon, size: 28, color: AppColors.verde),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        m.title,
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.verde,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        m.description,
-                        style: TextStyle(fontSize: 14, color: AppColors.cinza, height: 1.4),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
+          ...missions.map(
+            (m) => Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-              )),
+                child: Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: AppColors.verde.withValues(alpha: 0.2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(m.icon, size: 28, color: AppColors.verde),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      m.title,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.verde,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      m.description,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: AppColors.cinza,
+                        height: 1.4,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -271,5 +279,9 @@ class _MissionData {
   final IconData icon;
   final String title;
   final String description;
-  const _MissionData({required this.icon, required this.title, required this.description});
+  const _MissionData({
+    required this.icon,
+    required this.title,
+    required this.description,
+  });
 }

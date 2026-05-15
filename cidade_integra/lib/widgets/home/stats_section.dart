@@ -8,9 +8,21 @@ class StatsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     // TODO: substituir por dados reais do Firestore no Milestone 5
     final stats = [
-      _StatData(icon: Icons.campaign, value: '150+', label: 'Denúncias Registradas'),
-      _StatData(icon: Icons.check_circle, value: '50+', label: 'Problemas Resolvidos'),
-      _StatData(icon: Icons.schedule, value: '5', label: 'Dias em Média para Solução'),
+      _StatData(
+        icon: Icons.campaign,
+        value: '150+',
+        label: 'Denúncias Registradas',
+      ),
+      _StatData(
+        icon: Icons.check_circle,
+        value: '50+',
+        label: 'Problemas Resolvidos',
+      ),
+      _StatData(
+        icon: Icons.schedule,
+        value: '5',
+        label: 'Dias em Média para Solução',
+      ),
     ];
 
     return Padding(
@@ -27,10 +39,12 @@ class StatsSection extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
-          ...stats.map((stat) => Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: _StatCard(data: stat),
-          )),
+          ...stats.map(
+            (stat) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _StatCard(data: stat),
+            ),
+          ),
         ],
       ),
     );
@@ -41,7 +55,11 @@ class _StatData {
   final IconData icon;
   final String value;
   final String label;
-  const _StatData({required this.icon, required this.value, required this.label});
+  const _StatData({
+    required this.icon,
+    required this.value,
+    required this.label,
+  });
 }
 
 class _StatCard extends StatelessWidget {

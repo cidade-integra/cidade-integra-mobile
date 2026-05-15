@@ -16,11 +16,7 @@ class BaseLayout extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          children: [
-            const EmailVerificationBanner(),
-            child,
-            const AppFooter(),
-          ],
+          children: [const EmailVerificationBanner(), child, const AppFooter()],
         ),
       ),
     );

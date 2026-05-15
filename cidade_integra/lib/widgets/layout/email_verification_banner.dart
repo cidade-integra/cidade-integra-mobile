@@ -8,7 +8,8 @@ class EmailVerificationBanner extends StatefulWidget {
   const EmailVerificationBanner({super.key});
 
   @override
-  State<EmailVerificationBanner> createState() => _EmailVerificationBannerState();
+  State<EmailVerificationBanner> createState() =>
+      _EmailVerificationBannerState();
 }
 
 class _EmailVerificationBannerState extends State<EmailVerificationBanner> {
@@ -19,7 +20,11 @@ class _EmailVerificationBannerState extends State<EmailVerificationBanner> {
     setState(() => _sending = true);
     try {
       await FirebaseAuth.instance.currentUser?.sendEmailVerification();
-      if (mounted) setState(() { _sent = true; _sending = false; });
+      if (mounted)
+        setState(() {
+          _sent = true;
+          _sending = false;
+        });
     } catch (_) {
       if (mounted) setState(() => _sending = false);
     }
@@ -39,7 +44,11 @@ class _EmailVerificationBannerState extends State<EmailVerificationBanner> {
       color: const Color(0xFFFFF3CD),
       child: Row(
         children: [
-          Icon(Icons.warning_amber_rounded, size: 20, color: AppColors.vermelho),
+          Icon(
+            Icons.warning_amber_rounded,
+            size: 20,
+            color: AppColors.vermelho,
+          ),
           const SizedBox(width: 10),
           Expanded(
             child: Text(

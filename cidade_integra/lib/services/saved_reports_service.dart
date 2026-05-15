@@ -10,9 +10,9 @@ class SavedReportsService {
   }
 
   Future<void> saveReport(String uid, String reportId) async {
-    await _savedRef(uid).doc(reportId).set({
-      'savedAt': FieldValue.serverTimestamp(),
-    });
+    await _savedRef(
+      uid,
+    ).doc(reportId).set({'savedAt': FieldValue.serverTimestamp()});
   }
 
   Future<void> removeReport(String uid, String reportId) async {
@@ -25,19 +25,16 @@ class SavedReportsService {
   }
 
   Future<List<Report>> getSavedReports(String uid) async {
-    final savedDocs = await _savedRef(uid)
-        .orderBy('savedAt', descending: true)
-        .get();
+    final savedDocs =
+        await _savedRef(uid).orderBy('savedAt', descending: true).get();
 
     final reportIds = savedDocs.docs.map((d) => d.id).toList();
     if (reportIds.isEmpty) return [];
 
     final reports = <Report>[];
     for (final id in reportIds) {
-      final doc = await FirebaseFirestore.instance
-          .collection('reports')
-          .doc(id)
-          .get();
+      final doc =
+          await FirebaseFirestore.instance.collection('reports').doc(id).get();
       if (doc.exists) {
         reports.add(Report.fromFirestore(doc));
       }

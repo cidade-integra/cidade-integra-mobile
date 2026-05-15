@@ -39,7 +39,11 @@ class _AdminUsuariosScreenState extends State<AdminUsuariosScreen> {
     setState(() => _loading = true);
     try {
       final users = await _service.getAllUsers();
-      if (mounted) setState(() { _allUsers = users; _loading = false; });
+      if (mounted)
+        setState(() {
+          _allUsers = users;
+          _loading = false;
+        });
     } catch (_) {
       if (mounted) setState(() => _loading = false);
     }
@@ -48,42 +52,49 @@ class _AdminUsuariosScreenState extends State<AdminUsuariosScreen> {
   List<AppUser> get _filtered {
     if (_searchQuery.isEmpty) return _allUsers;
     final q = _searchQuery.toLowerCase();
-    return _allUsers.where((u) =>
-        u.displayName.toLowerCase().contains(q) ||
-        u.email.toLowerCase().contains(q)).toList();
+    return _allUsers
+        .where(
+          (u) =>
+              u.displayName.toLowerCase().contains(q) ||
+              u.email.toLowerCase().contains(q),
+        )
+        .toList();
   }
 
   void _confirmRoleChange(AppUser user) {
     final newRole = user.role == 'admin' ? 'user' : 'admin';
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Alterar Permissão'),
-        content: Text(
-          'Alterar "${user.displayName}" de '
-          '${user.role == "admin" ? "Admin" : "Usuário"} '
-          'para ${newRole == "admin" ? "Admin" : "Usuário"}?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancelar'),
+      builder:
+          (ctx) => AlertDialog(
+            title: const Text('Alterar Permissão'),
+            content: Text(
+              'Alterar "${user.displayName}" de '
+              '${user.role == "admin" ? "Admin" : "Usuário"} '
+              'para ${newRole == "admin" ? "Admin" : "Usuário"}?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Cancelar'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  Navigator.pop(ctx);
+                  await _service.updateUserRole(user.uid, newRole);
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Permissão alterada para $newRole.'),
+                      ),
+                    );
+                    _load();
+                  }
+                },
+                child: const Text('Confirmar'),
+              ),
+            ],
           ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(ctx);
-              await _service.updateUserRole(user.uid, newRole);
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Permissão alterada para $newRole.')),
-                );
-                _load();
-              }
-            },
-            child: const Text('Confirmar'),
-          ),
-        ],
-      ),
     );
   }
 
@@ -91,41 +102,49 @@ class _AdminUsuariosScreenState extends State<AdminUsuariosScreen> {
     final newStatus = user.status == 'active' ? 'inactive' : 'active';
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(newStatus == 'inactive' ? 'Desativar Usuário' : 'Reativar Usuário'),
-        content: Text(
-          '${newStatus == "inactive" ? "Desativar" : "Reativar"} '
-          'a conta de "${user.displayName}"?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(ctx);
-              await _service.updateUserStatus(user.uid, newStatus);
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(newStatus == 'inactive'
-                        ? 'Usuário desativado.'
-                        : 'Usuário reativado.'),
-                  ),
-                );
-                _load();
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: newStatus == 'inactive'
-                  ? AppColors.vermelho
-                  : AppColors.verde,
+      builder:
+          (ctx) => AlertDialog(
+            title: Text(
+              newStatus == 'inactive'
+                  ? 'Desativar Usuário'
+                  : 'Reativar Usuário',
             ),
-            child: Text(newStatus == 'inactive' ? 'Desativar' : 'Reativar'),
+            content: Text(
+              '${newStatus == "inactive" ? "Desativar" : "Reativar"} '
+              'a conta de "${user.displayName}"?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Cancelar'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  Navigator.pop(ctx);
+                  await _service.updateUserStatus(user.uid, newStatus);
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          newStatus == 'inactive'
+                              ? 'Usuário desativado.'
+                              : 'Usuário reativado.',
+                        ),
+                      ),
+                    );
+                    _load();
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor:
+                      newStatus == 'inactive'
+                          ? AppColors.vermelho
+                          : AppColors.verde,
+                ),
+                child: Text(newStatus == 'inactive' ? 'Desativar' : 'Reativar'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
@@ -159,16 +178,17 @@ class _AdminUsuariosScreenState extends State<AdminUsuariosScreen> {
               IconButton(
                 icon: const Icon(Icons.file_download, color: Colors.white),
                 tooltip: 'Exportar CSV',
-                onPressed: _allUsers.isEmpty
-                    ? null
-                    : () async {
-                        await ExportService().exportUsersCSV(_allUsers);
-                        if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('CSV exportado.')),
-                          );
-                        }
-                      },
+                onPressed:
+                    _allUsers.isEmpty
+                        ? null
+                        : () async {
+                          await ExportService().exportUsersCSV(_allUsers);
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('CSV exportado.')),
+                            );
+                          }
+                        },
               ),
             ],
           ),
@@ -178,21 +198,23 @@ class _AdminUsuariosScreenState extends State<AdminUsuariosScreen> {
           padding: const EdgeInsets.all(16),
           child: TextField(
             controller: _searchController,
-            onChanged: (v) => _debouncer.call(() {
-              if (mounted) setState(() => _searchQuery = v);
-            }),
+            onChanged:
+                (v) => _debouncer.call(() {
+                  if (mounted) setState(() => _searchQuery = v);
+                }),
             decoration: InputDecoration(
               hintText: 'Buscar por nome ou email...',
               prefixIcon: const Icon(Icons.search),
-              suffixIcon: _searchQuery.isNotEmpty
-                  ? IconButton(
-                      icon: const Icon(Icons.clear),
-                      onPressed: () {
-                        _searchController.clear();
-                        setState(() => _searchQuery = '');
-                      },
-                    )
-                  : null,
+              suffixIcon:
+                  _searchQuery.isNotEmpty
+                      ? IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() => _searchQuery = '');
+                        },
+                      )
+                      : null,
             ),
           ),
         ),
@@ -250,7 +272,10 @@ class _UserTile extends StatelessWidget {
             user.displayName.isNotEmpty
                 ? user.displayName[0].toUpperCase()
                 : '?',
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
         title: Row(
@@ -270,9 +295,10 @@ class _UserTile extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: user.isAdmin
-                    ? AppColors.verde.withValues(alpha: 0.15)
-                    : AppColors.azul.withValues(alpha: 0.1),
+                color:
+                    user.isAdmin
+                        ? AppColors.verde.withValues(alpha: 0.15)
+                        : AppColors.azul.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
@@ -314,31 +340,32 @@ class _UserTile extends StatelessWidget {
             if (action == 'role') onRoleChange();
             if (action == 'status') onStatusChange();
           },
-          itemBuilder: (_) => [
-            PopupMenuItem(
-              value: 'role',
-              child: Row(
-                children: [
-                  const Icon(Icons.swap_horiz, size: 18),
-                  const SizedBox(width: 8),
-                  Text(user.isAdmin ? 'Tornar Usuário' : 'Tornar Admin'),
-                ],
-              ),
-            ),
-            PopupMenuItem(
-              value: 'status',
-              child: Row(
-                children: [
-                  Icon(
-                    isActive ? Icons.block : Icons.check_circle_outline,
-                    size: 18,
+          itemBuilder:
+              (_) => [
+                PopupMenuItem(
+                  value: 'role',
+                  child: Row(
+                    children: [
+                      const Icon(Icons.swap_horiz, size: 18),
+                      const SizedBox(width: 8),
+                      Text(user.isAdmin ? 'Tornar Usuário' : 'Tornar Admin'),
+                    ],
                   ),
-                  const SizedBox(width: 8),
-                  Text(isActive ? 'Desativar' : 'Reativar'),
-                ],
-              ),
-            ),
-          ],
+                ),
+                PopupMenuItem(
+                  value: 'status',
+                  child: Row(
+                    children: [
+                      Icon(
+                        isActive ? Icons.block : Icons.check_circle_outline,
+                        size: 18,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(isActive ? 'Desativar' : 'Reativar'),
+                    ],
+                  ),
+                ),
+              ],
         ),
       ),
     );

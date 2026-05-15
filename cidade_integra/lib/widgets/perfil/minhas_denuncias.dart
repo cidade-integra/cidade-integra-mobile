@@ -99,8 +99,11 @@ class _MyReportsList extends StatelessWidget {
             child: Center(
               child: Column(
                 children: [
-                  Icon(Icons.campaign_outlined,
-                      size: 40, color: AppColors.textoSecundario),
+                  Icon(
+                    Icons.campaign_outlined,
+                    size: 40,
+                    color: AppColors.textoSecundario,
+                  ),
                   const SizedBox(height: 8),
                   Text(
                     'Você ainda não fez nenhuma denúncia.',
@@ -113,12 +116,15 @@ class _MyReportsList extends StatelessWidget {
         }
 
         return Column(
-          children: reports
-              .map((r) => CardDenuncia(
-                    report: r,
-                    onTap: () => context.go('/denuncias/${r.id}'),
-                  ))
-              .toList(),
+          children:
+              reports
+                  .map(
+                    (r) => CardDenuncia(
+                      report: r,
+                      onTap: () => context.go('/denuncias/${r.id}'),
+                    ),
+                  )
+                  .toList(),
         );
       },
     );
@@ -148,8 +154,11 @@ class _SavedReportsList extends StatelessWidget {
             child: Center(
               child: Column(
                 children: [
-                  Icon(Icons.bookmark_outline,
-                      size: 40, color: AppColors.textoSecundario),
+                  Icon(
+                    Icons.bookmark_outline,
+                    size: 40,
+                    color: AppColors.textoSecundario,
+                  ),
                   const SizedBox(height: 8),
                   Text(
                     'Nenhuma denúncia salva.',
@@ -162,12 +171,15 @@ class _SavedReportsList extends StatelessWidget {
         }
 
         return Column(
-          children: reports
-              .map((r) => CardDenuncia(
-                    report: r,
-                    onTap: () => context.go('/denuncias/${r.id}'),
-                  ))
-              .toList(),
+          children:
+              reports
+                  .map(
+                    (r) => CardDenuncia(
+                      report: r,
+                      onTap: () => context.go('/denuncias/${r.id}'),
+                    ),
+                  )
+                  .toList(),
         );
       },
     );

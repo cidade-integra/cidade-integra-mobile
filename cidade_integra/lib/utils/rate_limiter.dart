@@ -7,24 +7,24 @@ class RateLimiter {
 
   /// Returns true if the action is allowed, false if rate-limited.
   /// Stores timestamps in SharedPreferences keyed by [actionKey].
-  static Future<bool> canPerform(
-    String actionKey, {
-    int maxPerHour = 5,
-  }) async {
+  static Future<bool> canPerform(String actionKey, {int maxPerHour = 5}) async {
     final prefs = await SharedPreferences.getInstance();
     final key = 'rate_$actionKey';
     final stored = prefs.getStringList(key) ?? [];
     final now = DateTime.now();
     final cutoff = now.subtract(const Duration(hours: 1));
 
-    final recent = stored
-        .map((s) => DateTime.tryParse(s))
-        .where((t) => t != null && t.isAfter(cutoff))
-        .cast<DateTime>()
-        .toList();
+    final recent =
+        stored
+            .map((s) => DateTime.tryParse(s))
+            .where((t) => t != null && t.isAfter(cutoff))
+            .cast<DateTime>()
+            .toList();
 
     if (recent.length >= maxPerHour) {
-      debugPrint('[RateLimiter] Blocked: $actionKey (${recent.length}/$maxPerHour in last hour)');
+      debugPrint(
+        '[RateLimiter] Blocked: $actionKey (${recent.length}/$maxPerHour in last hour)',
+      );
       return false;
     }
 

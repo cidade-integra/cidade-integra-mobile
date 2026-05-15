@@ -76,10 +76,7 @@ class _FaqHeader extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            Colors.grey.shade50,
-            Colors.white,
-          ],
+          colors: [Colors.grey.shade50, Colors.white],
         ),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
@@ -186,7 +183,9 @@ class _ContactSection extends StatelessWidget {
                     AppColors.verde.withValues(alpha: 0.04),
                   ],
                 ),
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(8),
+                ),
               ),
               child: Row(
                 children: [
@@ -198,11 +197,14 @@ class _ContactSection extends StatelessWidget {
                       shape: BoxShape.circle,
                     ),
                     child: const Center(
-                      child: Text('?',
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700)),
+                      child: Text(
+                        '?',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -321,15 +323,22 @@ class _ContactCard extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title,
-                      style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.azul)),
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.azul,
+                    ),
+                  ),
                   const SizedBox(height: 2),
-                  Text(info,
-                      style: TextStyle(
-                          fontSize: 13, color: AppColors.textoSecundario)),
+                  Text(
+                    info,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: AppColors.textoSecundario,
+                    ),
+                  ),
                 ],
               ),
             ],

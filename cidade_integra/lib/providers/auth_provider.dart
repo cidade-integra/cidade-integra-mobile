@@ -26,10 +26,11 @@ class AuthProvider extends ChangeNotifier {
     _user = user;
     if (user != null) {
       try {
-        final doc = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .get();
+        final doc =
+            await FirebaseFirestore.instance
+                .collection('users')
+                .doc(user.uid)
+                .get();
 
         if (doc.exists) {
           _role = doc.data()?['role'] ?? 'user';
@@ -43,19 +44,19 @@ class AuthProvider extends ChangeNotifier {
               .collection('users')
               .doc(user.uid)
               .set({
-            'displayName': user.displayName ?? '',
-            'email': user.email ?? '',
-            'photoURL': user.photoURL ?? '',
-            'role': 'user',
-            'createdAt': DateTime.now().toIso8601String(),
-            'score': 0,
-            'reportCount': 0,
-            'lastLoginAt': DateTime.now().toIso8601String(),
-            'region': '',
-            'verified': false,
-            'bio': '',
-            'status': 'active',
-          });
+                'displayName': user.displayName ?? '',
+                'email': user.email ?? '',
+                'photoURL': user.photoURL ?? '',
+                'role': 'user',
+                'createdAt': DateTime.now().toIso8601String(),
+                'score': 0,
+                'reportCount': 0,
+                'lastLoginAt': DateTime.now().toIso8601String(),
+                'region': '',
+                'verified': false,
+                'bio': '',
+                'status': 'active',
+              });
           _role = 'user';
         }
       } catch (_) {

@@ -76,11 +76,12 @@ class _DenunciasScreenState extends State<DenunciasScreen> {
     }
     if (_searchQuery.isNotEmpty) {
       final q = _searchQuery.toLowerCase();
-      filtered = filtered.where((r) {
-        return r.title.toLowerCase().contains(q) ||
-            r.description.toLowerCase().contains(q) ||
-            r.location.address.toLowerCase().contains(q);
-      }).toList();
+      filtered =
+          filtered.where((r) {
+            return r.title.toLowerCase().contains(q) ||
+                r.description.toLowerCase().contains(q) ||
+                r.location.address.toLowerCase().contains(q);
+          }).toList();
     }
 
     return filtered;
@@ -128,7 +129,11 @@ class _DenunciasScreenState extends State<DenunciasScreen> {
               color: AppColors.verde.withValues(alpha: 0.12),
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.campaign_outlined, size: 32, color: AppColors.verde),
+            child: Icon(
+              Icons.campaign_outlined,
+              size: 32,
+              color: AppColors.verde,
+            ),
           ),
           const SizedBox(height: 12),
           Text(
@@ -166,16 +171,17 @@ class _DenunciasScreenState extends State<DenunciasScreen> {
         decoration: InputDecoration(
           hintText: 'Buscar denúncias...',
           prefixIcon: const Icon(Icons.search),
-          suffixIcon: _searchQuery.isNotEmpty
-              ? IconButton(
-                  icon: const Icon(Icons.clear),
-                  onPressed: () {
-                    _searchController.clear();
-                    setState(() => _searchQuery = '');
-                    _resetPage();
-                  },
-                )
-              : null,
+          suffixIcon:
+              _searchQuery.isNotEmpty
+                  ? IconButton(
+                    icon: const Icon(Icons.clear),
+                    onPressed: () {
+                      _searchController.clear();
+                      setState(() => _searchQuery = '');
+                      _resetPage();
+                    },
+                  )
+                  : null,
         ),
       ),
     );
@@ -189,17 +195,19 @@ class _DenunciasScreenState extends State<DenunciasScreen> {
         child: Row(
           children: [
             _buildFilterChip(
-              label: _statusFilter == null
-                  ? 'Status'
-                  : _statusLabel(_statusFilter!),
+              label:
+                  _statusFilter == null
+                      ? 'Status'
+                      : _statusLabel(_statusFilter!),
               active: _statusFilter != null,
               onTap: () => _showStatusFilter(),
             ),
             const SizedBox(width: 8),
             _buildFilterChip(
-              label: _categoryFilter == null
-                  ? 'Categoria'
-                  : _categoryLabel(_categoryFilter!),
+              label:
+                  _categoryFilter == null
+                      ? 'Categoria'
+                      : _categoryLabel(_categoryFilter!),
               active: _categoryFilter != null,
               onTap: () => _showCategoryFilter(),
             ),
@@ -241,45 +249,46 @@ class _DenunciasScreenState extends State<DenunciasScreen> {
     showModalBottomSheet(
       context: context,
       useRootNavigator: true,
-      builder: (sheetContext) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.only(top: 8, bottom: 8),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 8),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(2),
-                ),
+      builder:
+          (sheetContext) => SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 8, bottom: 8),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 40,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  ListTile(
+                    title: const Text('Todas'),
+                    leading: const Icon(Icons.list),
+                    selected: _statusFilter == null,
+                    onTap: () {
+                      Navigator.pop(sheetContext);
+                      setState(() => _statusFilter = null);
+                      _resetPage();
+                    },
+                  ),
+                  for (final s in ReportStatus.values)
+                    ListTile(
+                      title: Text(s.label),
+                      selected: _statusFilter == s.name,
+                      onTap: () {
+                        Navigator.pop(sheetContext);
+                        setState(() => _statusFilter = s.name);
+                        _resetPage();
+                      },
+                    ),
+                ],
               ),
-              ListTile(
-                title: const Text('Todas'),
-                leading: const Icon(Icons.list),
-                selected: _statusFilter == null,
-                onTap: () {
-                  Navigator.pop(sheetContext);
-                  setState(() => _statusFilter = null);
-                  _resetPage();
-                },
-              ),
-              for (final s in ReportStatus.values)
-                ListTile(
-                  title: Text(s.label),
-                  selected: _statusFilter == s.name,
-                  onTap: () {
-                    Navigator.pop(sheetContext);
-                    setState(() => _statusFilter = s.name);
-                    _resetPage();
-                  },
-                ),
-            ],
+            ),
           ),
-        ),
-      ),
     );
   }
 
@@ -287,46 +296,47 @@ class _DenunciasScreenState extends State<DenunciasScreen> {
     showModalBottomSheet(
       context: context,
       useRootNavigator: true,
-      builder: (sheetContext) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.only(top: 8, bottom: 8),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 8),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(2),
-                ),
+      builder:
+          (sheetContext) => SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 8, bottom: 8),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 40,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  ListTile(
+                    title: const Text('Todas'),
+                    leading: const Icon(Icons.list),
+                    selected: _categoryFilter == null,
+                    onTap: () {
+                      Navigator.pop(sheetContext);
+                      setState(() => _categoryFilter = null);
+                      _resetPage();
+                    },
+                  ),
+                  for (final c in ReportCategory.values)
+                    ListTile(
+                      title: Text(c.label),
+                      leading: Icon(c.icon),
+                      selected: _categoryFilter == c.name,
+                      onTap: () {
+                        Navigator.pop(sheetContext);
+                        setState(() => _categoryFilter = c.name);
+                        _resetPage();
+                      },
+                    ),
+                ],
               ),
-              ListTile(
-                title: const Text('Todas'),
-                leading: const Icon(Icons.list),
-                selected: _categoryFilter == null,
-                onTap: () {
-                  Navigator.pop(sheetContext);
-                  setState(() => _categoryFilter = null);
-                  _resetPage();
-                },
-              ),
-              for (final c in ReportCategory.values)
-                ListTile(
-                  title: Text(c.label),
-                  leading: Icon(c.icon),
-                  selected: _categoryFilter == c.name,
-                  onTap: () {
-                    Navigator.pop(sheetContext);
-                    setState(() => _categoryFilter = c.name);
-                    _resetPage();
-                  },
-                ),
-            ],
+            ),
           ),
-        ),
-      ),
     );
   }
 
@@ -372,12 +382,15 @@ class _DenunciasScreenState extends State<DenunciasScreen> {
     return Padding(
       padding: const EdgeInsets.only(top: 8, bottom: 16),
       child: Column(
-        children: _pagedReports
-            .map((report) => CardDenuncia(
-                  report: report,
-                  onTap: () => context.go('/denuncias/${report.id}'),
-                ))
-            .toList(),
+        children:
+            _pagedReports
+                .map(
+                  (report) => CardDenuncia(
+                    report: report,
+                    onTap: () => context.go('/denuncias/${report.id}'),
+                  ),
+                )
+                .toList(),
       ),
     );
   }

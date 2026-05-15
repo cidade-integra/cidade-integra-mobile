@@ -25,7 +25,11 @@ class BadgesDisplay extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(Icons.emoji_events_outlined, size: 20, color: AppColors.azul),
+              Icon(
+                Icons.emoji_events_outlined,
+                size: 20,
+                color: AppColors.azul,
+              ),
               const SizedBox(width: 8),
               Text(
                 'Conquistas',
@@ -49,10 +53,11 @@ class BadgesDisplay extends StatelessWidget {
           Wrap(
             spacing: 10,
             runSpacing: 10,
-            children: rules.badgeRules.map((badge) {
-              final isEarned = earnedIds.contains(badge.id);
-              return _BadgeChip(badge: badge, earned: isEarned);
-            }).toList(),
+            children:
+                rules.badgeRules.map((badge) {
+                  final isEarned = earnedIds.contains(badge.id);
+                  return _BadgeChip(badge: badge, earned: isEarned);
+                }).toList(),
           ),
         ],
       ),
@@ -73,14 +78,16 @@ class _BadgeChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: earned
-              ? badge.color.withValues(alpha: 0.1)
-              : Colors.grey.shade100,
+          color:
+              earned
+                  ? badge.color.withValues(alpha: 0.1)
+                  : Colors.grey.shade100,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: earned
-                ? badge.color.withValues(alpha: 0.3)
-                : Colors.grey.shade300,
+            color:
+                earned
+                    ? badge.color.withValues(alpha: 0.3)
+                    : Colors.grey.shade300,
           ),
         ),
         child: Row(

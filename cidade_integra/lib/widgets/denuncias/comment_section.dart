@@ -36,14 +36,18 @@ class _CommentSectionState extends State<CommentSection> {
     final text = InputSanitizer.sanitize(_controller.text);
     if (text.length < _minLength) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Comentário deve ter pelo menos 5 caracteres.')),
+        const SnackBar(
+          content: Text('Comentário deve ter pelo menos 5 caracteres.'),
+        ),
       );
       return;
     }
 
     if (InputSanitizer.containsBlockedWords(text)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('O comentário contém palavras inadequadas.')),
+        const SnackBar(
+          content: Text('O comentário contém palavras inadequadas.'),
+        ),
       );
       return;
     }
@@ -55,7 +59,9 @@ class _CommentSectionState extends State<CommentSection> {
     if (currentUser != null && !currentUser.emailVerified) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Verifique seu e-mail antes de comentar.')),
+          const SnackBar(
+            content: Text('Verifique seu e-mail antes de comentar.'),
+          ),
         );
       }
       return;
@@ -112,7 +118,11 @@ class _CommentSectionState extends State<CommentSection> {
             children: [
               Row(
                 children: [
-                  Icon(Icons.chat_bubble_outline, size: 20, color: AppColors.azul),
+                  Icon(
+                    Icons.chat_bubble_outline,
+                    size: 20,
+                    color: AppColors.azul,
+                  ),
                   const SizedBox(width: 8),
                   Text(
                     'Comentários',
@@ -134,7 +144,10 @@ class _CommentSectionState extends State<CommentSection> {
                   decoration: InputDecoration(
                     hintText: 'Adicione seu comentário sobre esta denúncia…',
                     helperText: 'Seja respeitoso e construtivo.',
-                    helperStyle: TextStyle(fontSize: 12, color: AppColors.textoSecundario),
+                    helperStyle: TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textoSecundario,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -142,13 +155,17 @@ class _CommentSectionState extends State<CommentSection> {
                   alignment: Alignment.centerRight,
                   child: ElevatedButton(
                     onPressed: _sending ? null : _submit,
-                    child: _sending
-                        ? const SizedBox(
-                            height: 18,
-                            width: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                          )
-                        : const Text('Publicar Comentário'),
+                    child:
+                        _sending
+                            ? const SizedBox(
+                              height: 18,
+                              width: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                            : const Text('Publicar Comentário'),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -194,9 +211,8 @@ class _CommentSectionState extends State<CommentSection> {
                   }
 
                   return Column(
-                    children: comments
-                        .map((c) => _CommentCard(comment: c))
-                        .toList(),
+                    children:
+                        comments.map((c) => _CommentCard(comment: c)).toList(),
                   );
                 },
               ),
@@ -220,14 +236,16 @@ class _CommentCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: comment.isAdmin
-            ? AppColors.verde.withValues(alpha: 0.05)
-            : Colors.grey.shade50,
+        color:
+            comment.isAdmin
+                ? AppColors.verde.withValues(alpha: 0.05)
+                : Colors.grey.shade50,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: comment.isAdmin
-              ? AppColors.verde.withValues(alpha: 0.2)
-              : AppColors.bordas,
+          color:
+              comment.isAdmin
+                  ? AppColors.verde.withValues(alpha: 0.2)
+                  : AppColors.bordas,
         ),
       ),
       child: Column(
@@ -271,7 +289,9 @@ class _CommentCard extends StatelessWidget {
                           const SizedBox(width: 6),
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 2),
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
                               color: AppColors.verde.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(4),
@@ -303,11 +323,7 @@ class _CommentCard extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             comment.message,
-            style: TextStyle(
-              fontSize: 14,
-              color: AppColors.preto,
-              height: 1.4,
-            ),
+            style: TextStyle(fontSize: 14, color: AppColors.preto, height: 1.4),
           ),
         ],
       ),

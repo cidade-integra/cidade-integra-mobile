@@ -58,17 +58,23 @@ class HeroSection extends StatelessWidget {
                 'assets/images/hero-foto.webp',
                 width: double.infinity,
                 fit: BoxFit.contain,
-                semanticLabel: 'Cidadãos reportando problemas urbanos na cidade',
-                errorBuilder: (_, __, ___) => Container(
-                  height: 200,
-                  decoration: BoxDecoration(
-                    color: AppColors.verdeEscuro.withValues(alpha: 0.3),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Center(
-                    child: Icon(Icons.location_city, size: 64, color: Colors.white54),
-                  ),
-                ),
+                semanticLabel:
+                    'Cidadãos reportando problemas urbanos na cidade',
+                errorBuilder:
+                    (_, __, ___) => Container(
+                      height: 200,
+                      decoration: BoxDecoration(
+                        color: AppColors.verdeEscuro.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Center(
+                        child: Icon(
+                          Icons.location_city,
+                          size: 64,
+                          color: Colors.white54,
+                        ),
+                      ),
+                    ),
               ),
             ),
             const SizedBox(height: 24),

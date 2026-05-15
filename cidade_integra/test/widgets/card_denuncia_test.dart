@@ -22,43 +22,38 @@ void main() {
 
   group('CardDenuncia', () {
     testWidgets('shows report title', (tester) async {
-      await tester.pumpWidget(wrap(CardDenuncia(
-        report: mockReport,
-        onTap: () {},
-      )));
+      await tester.pumpWidget(
+        wrap(CardDenuncia(report: mockReport, onTap: () {})),
+      );
       expect(find.text('Buraco na calçada'), findsOneWidget);
     });
 
     testWidgets('shows category label', (tester) async {
-      await tester.pumpWidget(wrap(CardDenuncia(
-        report: mockReport,
-        onTap: () {},
-      )));
+      await tester.pumpWidget(
+        wrap(CardDenuncia(report: mockReport, onTap: () {})),
+      );
       expect(find.text('Buracos'), findsOneWidget);
     });
 
     testWidgets('shows status badge', (tester) async {
-      await tester.pumpWidget(wrap(CardDenuncia(
-        report: mockReport,
-        onTap: () {},
-      )));
+      await tester.pumpWidget(
+        wrap(CardDenuncia(report: mockReport, onTap: () {})),
+      );
       expect(find.text('Pendente'), findsOneWidget);
     });
 
     testWidgets('shows formatted date', (tester) async {
-      await tester.pumpWidget(wrap(CardDenuncia(
-        report: mockReport,
-        onTap: () {},
-      )));
+      await tester.pumpWidget(
+        wrap(CardDenuncia(report: mockReport, onTap: () {})),
+      );
       expect(find.text('15/01/2025'), findsOneWidget);
     });
 
     testWidgets('triggers onTap callback', (tester) async {
       bool tapped = false;
-      await tester.pumpWidget(wrap(CardDenuncia(
-        report: mockReport,
-        onTap: () => tapped = true,
-      )));
+      await tester.pumpWidget(
+        wrap(CardDenuncia(report: mockReport, onTap: () => tapped = true)),
+      );
       await tester.tap(find.text('Buraco na calçada'));
       expect(tapped, isTrue);
     });

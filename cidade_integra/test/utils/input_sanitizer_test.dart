@@ -60,12 +60,16 @@ void main() {
 
   group('InputSanitizer.validateImageUrl', () {
     test('allows Supabase URLs', () {
-      const url = 'https://fyjefwpyesgedvfuewiw.supabase.co/storage/v1/object/public/reports/img.jpg';
+      const url =
+          'https://fyjefwpyesgedvfuewiw.supabase.co/storage/v1/object/public/reports/img.jpg';
       expect(InputSanitizer.validateImageUrl(url), url);
     });
 
     test('rejects unknown hosts', () {
-      expect(InputSanitizer.validateImageUrl('https://evil.com/img.jpg'), isNull);
+      expect(
+        InputSanitizer.validateImageUrl('https://evil.com/img.jpg'),
+        isNull,
+      );
     });
 
     test('rejects malformed URLs', () {
@@ -109,7 +113,11 @@ void main() {
 
     test('detects blocked words when enabled', () {
       expect(
-        InputSanitizer.validateText('seu idiota', fieldName: 'campo', checkBlocked: true),
+        InputSanitizer.validateText(
+          'seu idiota',
+          fieldName: 'campo',
+          checkBlocked: true,
+        ),
         contains('inadequadas'),
       );
     });

@@ -41,9 +41,9 @@ class _LoginScreenState extends State<LoginScreen> {
       if (mounted) context.go('/');
     } on FirebaseAuthException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(mapAuthError(e.code))),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(mapAuthError(e.code))));
       }
     } catch (_) {
       if (mounted) {
@@ -70,17 +70,16 @@ class _LoginScreenState extends State<LoginScreen> {
       if (mounted) context.go('/');
     } on FirebaseAuthException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(mapAuthError(e.code))),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(mapAuthError(e.code))));
       }
     } catch (e) {
       debugPrint('Google Sign-In error: $e');
       if (mounted && e.toString().contains('canceled')) return;
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text('Erro ao fazer login com o Google: $e')),
+          SnackBar(content: Text('Erro ao fazer login com o Google: $e')),
         );
       }
     } finally {
@@ -134,10 +133,7 @@ class _LoginScreenState extends State<LoginScreen> {
         const SizedBox(height: 8),
         Text(
           'Faça login para reportar problemas urbanos na sua cidade.',
-          style: TextStyle(
-            fontSize: 14,
-            color: AppColors.textoSecundario,
-          ),
+          style: TextStyle(fontSize: 14, color: AppColors.textoSecundario),
           textAlign: TextAlign.center,
         ),
       ],
@@ -202,8 +198,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         ? Icons.visibility_off_outlined
                         : Icons.visibility_outlined,
                   ),
-                  onPressed: () =>
-                      setState(() => _obscurePassword = !_obscurePassword),
+                  onPressed:
+                      () =>
+                          setState(() => _obscurePassword = !_obscurePassword),
                 ),
               ),
               validator: (v) {
@@ -227,16 +224,17 @@ class _LoginScreenState extends State<LoginScreen> {
               height: 48,
               child: ElevatedButton(
                 onPressed: _loading ? null : _loginComEmail,
-                child: _loading
-                    ? const SizedBox(
-                        height: 22,
-                        width: 22,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Text('Entrar'),
+                child:
+                    _loading
+                        ? const SizedBox(
+                          height: 22,
+                          width: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                        : const Text('Entrar'),
               ),
             ),
             const SizedBox(height: 16),
@@ -263,13 +261,14 @@ class _LoginScreenState extends State<LoginScreen> {
               height: 48,
               child: OutlinedButton.icon(
                 onPressed: _googleLoading ? null : _loginComGoogle,
-                icon: _googleLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.g_mobiledata, size: 24),
+                icon:
+                    _googleLoading
+                        ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                        : const Icon(Icons.g_mobiledata, size: 24),
                 label: Text(
                   _googleLoading ? 'Entrando...' : 'Entrar com Google',
                 ),

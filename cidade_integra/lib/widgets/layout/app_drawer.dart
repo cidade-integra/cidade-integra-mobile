@@ -120,8 +120,10 @@ class AppDrawer extends StatelessWidget {
                 const Divider(),
 
                 Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   child: FilledButton.icon(
                     onPressed: () {
                       Navigator.pop(context);
@@ -142,8 +144,10 @@ class AppDrawer extends StatelessWidget {
 
                 if (isLoggedIn)
                   Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 4,
+                    ),
                     child: OutlinedButton.icon(
                       onPressed: () async {
                         Navigator.pop(context);
@@ -191,10 +195,7 @@ class _DrawerItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: Icon(
-        icon,
-        color: _isActive ? AppColors.verde : null,
-      ),
+      leading: Icon(icon, color: _isActive ? AppColors.verde : null),
       title: Text(
         label,
         style: TextStyle(

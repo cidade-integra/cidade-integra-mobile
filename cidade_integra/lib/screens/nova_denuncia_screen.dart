@@ -72,7 +72,9 @@ class _NovaDenunciaScreenState extends State<NovaDenunciaScreen> {
     if (currentUser != null && !currentUser.emailVerified) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Verifique seu e-mail antes de enviar denúncias.')),
+          const SnackBar(
+            content: Text('Verifique seu e-mail antes de enviar denúncias.'),
+          ),
         );
       }
       return;
@@ -82,7 +84,9 @@ class _NovaDenunciaScreenState extends State<NovaDenunciaScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Limite de denúncias por hora atingido. Tente mais tarde.'),
+            content: Text(
+              'Limite de denúncias por hora atingido. Tente mais tarde.',
+            ),
           ),
         );
       }
@@ -148,9 +152,9 @@ class _NovaDenunciaScreenState extends State<NovaDenunciaScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao enviar denúncia: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Erro ao enviar denúncia: $e')));
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -162,10 +166,7 @@ class _NovaDenunciaScreenState extends State<NovaDenunciaScreen> {
     return Column(
       children: [
         _buildHeader(),
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: _buildForm(),
-        ),
+        Padding(padding: const EdgeInsets.all(16), child: _buildForm()),
       ],
     );
   }
@@ -189,7 +190,11 @@ class _NovaDenunciaScreenState extends State<NovaDenunciaScreen> {
               color: AppColors.verde.withValues(alpha: 0.12),
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.add_circle_outline, size: 32, color: AppColors.verde),
+            child: Icon(
+              Icons.add_circle_outline,
+              size: 32,
+              color: AppColors.verde,
+            ),
           ),
           const SizedBox(height: 12),
           Text(
@@ -227,8 +232,13 @@ class _NovaDenunciaScreenState extends State<NovaDenunciaScreen> {
               prefixIcon: Icon(Icons.title),
               counterText: '',
             ),
-            validator: (v) => InputSanitizer.validateText(v,
-                fieldName: 'o título', min: 3, max: 100),
+            validator:
+                (v) => InputSanitizer.validateText(
+                  v,
+                  fieldName: 'o título',
+                  min: 3,
+                  max: 100,
+                ),
           ),
           const SizedBox(height: 16),
 
@@ -243,8 +253,13 @@ class _NovaDenunciaScreenState extends State<NovaDenunciaScreen> {
               prefixIcon: Icon(Icons.description_outlined),
               alignLabelWithHint: true,
             ),
-            validator: (v) => InputSanitizer.validateText(v,
-                fieldName: 'a descrição', min: 10, max: 2000),
+            validator:
+                (v) => InputSanitizer.validateText(
+                  v,
+                  fieldName: 'a descrição',
+                  min: 10,
+                  max: 2000,
+                ),
           ),
           const SizedBox(height: 16),
 
@@ -254,12 +269,13 @@ class _NovaDenunciaScreenState extends State<NovaDenunciaScreen> {
               prefixIcon: Icon(Icons.category_outlined),
             ),
             value: _categoriaSelecionada,
-            items: ReportCategory.values
-                .map((c) => DropdownMenuItem(
-                      value: c.name,
-                      child: Text(c.label),
-                    ))
-                .toList(),
+            items:
+                ReportCategory.values
+                    .map(
+                      (c) =>
+                          DropdownMenuItem(value: c.name, child: Text(c.label)),
+                    )
+                    .toList(),
             validator: (v) => v == null ? 'Selecione uma categoria' : null,
             onChanged: (v) => setState(() => _categoriaSelecionada = v),
           ),
@@ -275,20 +291,22 @@ class _NovaDenunciaScreenState extends State<NovaDenunciaScreen> {
               hintText: '00000-000',
               prefixIcon: const Icon(Icons.local_post_office_outlined),
               counterText: '',
-              suffixIcon: _buscandoCep
-                  ? const Padding(
-                      padding: EdgeInsets.all(12),
-                      child: SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                    )
-                  : null,
+              suffixIcon:
+                  _buscandoCep
+                      ? const Padding(
+                        padding: EdgeInsets.all(12),
+                        child: SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      )
+                      : null,
             ),
             validator: (v) {
               if (v == null || v.trim().isEmpty) return null;
-              if (!InputSanitizer.isValidCep(v)) return 'CEP inválido (00000-000)';
+              if (!InputSanitizer.isValidCep(v))
+                return 'CEP inválido (00000-000)';
               return null;
             },
             onEditingComplete: _buscarCep,
@@ -305,14 +323,17 @@ class _NovaDenunciaScreenState extends State<NovaDenunciaScreen> {
               prefixIcon: Icon(Icons.location_on_outlined),
               counterText: '',
             ),
-            validator: (v) => InputSanitizer.validateText(v,
-                fieldName: 'o endereço', min: 5, max: 200),
+            validator:
+                (v) => InputSanitizer.validateText(
+                  v,
+                  fieldName: 'o endereço',
+                  min: 5,
+                  max: 200,
+                ),
           ),
           const SizedBox(height: 20),
 
-          ImageUploadWidget(
-            onImagesChanged: (imgs) => _selectedImages = imgs,
-          ),
+          ImageUploadWidget(onImagesChanged: (imgs) => _selectedImages = imgs),
           const SizedBox(height: 20),
 
           Row(
@@ -343,16 +364,17 @@ class _NovaDenunciaScreenState extends State<NovaDenunciaScreen> {
             height: 52,
             child: ElevatedButton.icon(
               onPressed: _loading ? null : _submit,
-              icon: _loading
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : const Icon(Icons.send, size: 20),
+              icon:
+                  _loading
+                      ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                      : const Icon(Icons.send, size: 20),
               label: Text(_loading ? 'Enviando...' : 'Enviar Denúncia'),
             ),
           ),

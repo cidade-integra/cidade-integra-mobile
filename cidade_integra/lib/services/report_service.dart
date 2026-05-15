@@ -26,10 +26,11 @@ class ReportService {
   }
 
   Future<List<Report>> getReportsByUser(String userId) async {
-    final snapshot = await _collection
-        .where('userId', isEqualTo: userId)
-        .orderBy('createdAt', descending: true)
-        .get();
+    final snapshot =
+        await _collection
+            .where('userId', isEqualTo: userId)
+            .orderBy('createdAt', descending: true)
+            .get();
     return snapshot.docs.map((doc) => Report.fromFirestore(doc)).toList();
   }
 

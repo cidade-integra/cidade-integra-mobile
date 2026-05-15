@@ -94,12 +94,42 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   Widget _buildStatCards() {
     final s = _stats ?? {};
     final cards = [
-      _StatCard(title: 'Total', value: '${s['total'] ?? 0}', icon: Icons.campaign, color: AppColors.azul),
-      _StatCard(title: 'Pendentes', value: '${s['pending'] ?? 0}', icon: Icons.hourglass_empty, color: const Color(0xFFF39C12)),
-      _StatCard(title: 'Em Análise', value: '${s['review'] ?? 0}', icon: Icons.search, color: const Color(0xFF3498DB)),
-      _StatCard(title: 'Resolvidas', value: '${s['resolved'] ?? 0}', icon: Icons.check_circle, color: const Color(0xFF2ECC71)),
-      _StatCard(title: 'Rejeitadas', value: '${s['rejected'] ?? 0}', icon: Icons.cancel, color: const Color(0xFFE74C3C)),
-      _StatCard(title: 'Usuários', value: '$_totalUsers', icon: Icons.people, color: const Color(0xFF9B59B6)),
+      _StatCard(
+        title: 'Total',
+        value: '${s['total'] ?? 0}',
+        icon: Icons.campaign,
+        color: AppColors.azul,
+      ),
+      _StatCard(
+        title: 'Pendentes',
+        value: '${s['pending'] ?? 0}',
+        icon: Icons.hourglass_empty,
+        color: const Color(0xFFF39C12),
+      ),
+      _StatCard(
+        title: 'Em Análise',
+        value: '${s['review'] ?? 0}',
+        icon: Icons.search,
+        color: const Color(0xFF3498DB),
+      ),
+      _StatCard(
+        title: 'Resolvidas',
+        value: '${s['resolved'] ?? 0}',
+        icon: Icons.check_circle,
+        color: const Color(0xFF2ECC71),
+      ),
+      _StatCard(
+        title: 'Rejeitadas',
+        value: '${s['rejected'] ?? 0}',
+        icon: Icons.cancel,
+        color: const Color(0xFFE74C3C),
+      ),
+      _StatCard(
+        title: 'Usuários',
+        value: '$_totalUsers',
+        icon: Icons.people,
+        color: const Color(0xFF9B59B6),
+      ),
     ];
 
     return Padding(
@@ -107,10 +137,15 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       child: Wrap(
         spacing: 12,
         runSpacing: 12,
-        children: cards.map((c) => SizedBox(
-          width: (MediaQuery.of(context).size.width - 44) / 2,
-          child: c,
-        )).toList(),
+        children:
+            cards
+                .map(
+                  (c) => SizedBox(
+                    width: (MediaQuery.of(context).size.width - 44) / 2,
+                    child: c,
+                  ),
+                )
+                .toList(),
       ),
     );
   }
@@ -159,9 +194,18 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(label, style: TextStyle(fontSize: 13, color: AppColors.azul)),
-                        Text('$value (${(pct * 100).toStringAsFixed(0)}%)',
-                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: color)),
+                        Text(
+                          label,
+                          style: TextStyle(fontSize: 13, color: AppColors.azul),
+                        ),
+                        Text(
+                          '$value (${(pct * 100).toStringAsFixed(0)}%)',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: color,
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 6),
@@ -250,7 +294,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 ),
                 subtitle: Text(
                   dateFormat.format(r.createdAt),
-                  style: TextStyle(fontSize: 12, color: AppColors.textoSecundario),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textoSecundario,
+                  ),
                 ),
                 trailing: StatusBadge(status: r.status),
                 onTap: () => context.go('/denuncias/${r.id}'),
@@ -294,11 +341,18 @@ class _StatCard extends StatelessWidget {
             children: [
               Text(
                 value,
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: color),
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                  color: color,
+                ),
               ),
               Text(
                 title,
-                style: TextStyle(fontSize: 11, color: AppColors.textoSecundario),
+                style: TextStyle(
+                  fontSize: 11,
+                  color: AppColors.textoSecundario,
+                ),
               ),
             ],
           ),
@@ -313,7 +367,11 @@ class _NavCard extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
 
-  const _NavCard({required this.icon, required this.label, required this.onTap});
+  const _NavCard({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -55,10 +55,7 @@ class _ProfileContent extends StatelessWidget {
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [
-                AppColors.azul,
-                AppColors.azul.withValues(alpha: 0.85),
-              ],
+              colors: [AppColors.azul, AppColors.azul.withValues(alpha: 0.85)],
             ),
           ),
           child: Column(
@@ -66,21 +63,23 @@ class _ProfileContent extends StatelessWidget {
               CircleAvatar(
                 radius: 48,
                 backgroundColor: AppColors.verde,
-                backgroundImage: user.photoURL.isNotEmpty
-                    ? NetworkImage(user.photoURL)
-                    : null,
-                child: user.photoURL.isEmpty
-                    ? Text(
-                        user.displayName.isNotEmpty
-                            ? user.displayName[0].toUpperCase()
-                            : '?',
-                        style: const TextStyle(
-                          fontSize: 36,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                        ),
-                      )
-                    : null,
+                backgroundImage:
+                    user.photoURL.isNotEmpty
+                        ? NetworkImage(user.photoURL)
+                        : null,
+                child:
+                    user.photoURL.isEmpty
+                        ? Text(
+                          user.displayName.isNotEmpty
+                              ? user.displayName[0].toUpperCase()
+                              : '?',
+                          style: const TextStyle(
+                            fontSize: 36,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        )
+                        : null,
               ),
               const SizedBox(height: 14),
               Text(
@@ -116,8 +115,11 @@ class _ProfileContent extends StatelessWidget {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.location_on_outlined,
-                        size: 14, color: Colors.white.withValues(alpha: 0.7)),
+                    Icon(
+                      Icons.location_on_outlined,
+                      size: 14,
+                      color: Colors.white.withValues(alpha: 0.7),
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       user.region,
@@ -238,10 +240,7 @@ class _StatCard extends StatelessWidget {
           const SizedBox(height: 2),
           Text(
             label,
-            style: TextStyle(
-              fontSize: 12,
-              color: AppColors.textoSecundario,
-            ),
+            style: TextStyle(fontSize: 12, color: AppColors.textoSecundario),
           ),
         ],
       ),

@@ -24,7 +24,11 @@ class ExportService {
       );
     }
 
-    await _shareFile(buffer.toString(), 'denuncias.csv', 'Relatório de Denúncias');
+    await _shareFile(
+      buffer.toString(),
+      'denuncias.csv',
+      'Relatório de Denúncias',
+    );
   }
 
   Future<void> exportUsersCSV(List<AppUser> users) async {
@@ -43,18 +47,23 @@ class ExportService {
       );
     }
 
-    await _shareFile(buffer.toString(), 'usuarios.csv', 'Relatório de Usuários');
+    await _shareFile(
+      buffer.toString(),
+      'usuarios.csv',
+      'Relatório de Usuários',
+    );
   }
 
-  Future<void> _shareFile(String content, String fileName, String subject) async {
+  Future<void> _shareFile(
+    String content,
+    String fileName,
+    String subject,
+  ) async {
     final dir = await getTemporaryDirectory();
     final file = File('${dir.path}/$fileName');
     await file.writeAsString(content);
     await SharePlus.instance.share(
-      ShareParams(
-        files: [XFile(file.path)],
-        subject: subject,
-      ),
+      ShareParams(files: [XFile(file.path)], subject: subject),
     );
   }
 

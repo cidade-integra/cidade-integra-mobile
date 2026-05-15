@@ -12,9 +12,10 @@ class GeocodingService {
     );
 
     try {
-      final response = await http.get(uri, headers: {
-        'User-Agent': 'CidadeIntegraApp/1.0',
-      });
+      final response = await http.get(
+        uri,
+        headers: {'User-Agent': 'CidadeIntegraApp/1.0'},
+      );
 
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);

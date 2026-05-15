@@ -23,7 +23,9 @@ class SupabaseService {
 
     final fileName = 'public/${const Uuid().v4()}.$ext';
 
-    await _storage.from(_bucket).upload(
+    await _storage
+        .from(_bucket)
+        .upload(
           fileName,
           file,
           fileOptions: const FileOptions(cacheControl: '3600', upsert: false),

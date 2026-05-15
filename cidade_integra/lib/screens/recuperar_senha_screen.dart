@@ -38,16 +38,14 @@ class _RecuperarSenhaScreenState extends State<RecuperarSenhaScreen> {
       }
     } on FirebaseAuthException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(mapAuthError(e.code))),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(mapAuthError(e.code))));
       }
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Não foi possível enviar o email.'),
-          ),
+          const SnackBar(content: Text('Não foi possível enviar o email.')),
         );
       }
     } finally {
@@ -82,9 +80,10 @@ class _RecuperarSenhaScreenState extends State<RecuperarSenhaScreen> {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: _enviado
-                ? AppColors.verde.withValues(alpha: 0.12)
-                : AppColors.azul.withValues(alpha: 0.08),
+            color:
+                _enviado
+                    ? AppColors.verde.withValues(alpha: 0.12)
+                    : AppColors.azul.withValues(alpha: 0.08),
             shape: BoxShape.circle,
           ),
           child: Icon(
@@ -145,10 +144,7 @@ class _RecuperarSenhaScreenState extends State<RecuperarSenhaScreen> {
           const SizedBox(height: 16),
           Text(
             'Um email foi enviado para:',
-            style: TextStyle(
-              fontSize: 14,
-              color: AppColors.textoSecundario,
-            ),
+            style: TextStyle(fontSize: 14, color: AppColors.textoSecundario),
           ),
           const SizedBox(height: 4),
           Text(
@@ -227,16 +223,17 @@ class _RecuperarSenhaScreenState extends State<RecuperarSenhaScreen> {
               height: 48,
               child: ElevatedButton(
                 onPressed: _loading ? null : _enviarReset,
-                child: _loading
-                    ? const SizedBox(
-                        height: 22,
-                        width: 22,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Text('Recuperar senha'),
+                child:
+                    _loading
+                        ? const SizedBox(
+                          height: 22,
+                          width: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                        : const Text('Recuperar senha'),
               ),
             ),
             const SizedBox(height: 16),

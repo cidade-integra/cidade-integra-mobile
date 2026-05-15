@@ -117,17 +117,17 @@ class _StepRow extends StatelessWidget {
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: state == _StepState.upcoming
-                    ? Colors.grey.shade200
-                    : color.withValues(alpha: 0.15),
+                color:
+                    state == _StepState.upcoming
+                        ? Colors.grey.shade200
+                        : color.withValues(alpha: 0.15),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 step.icon,
                 size: 18,
-                color: state == _StepState.upcoming
-                    ? Colors.grey.shade400
-                    : color,
+                color:
+                    state == _StepState.upcoming ? Colors.grey.shade400 : color,
               ),
             ),
             const SizedBox(width: 12),
@@ -140,9 +140,10 @@ class _StepRow extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: state == _StepState.upcoming
-                          ? AppColors.textoSecundario
-                          : AppColors.azul,
+                      color:
+                          state == _StepState.upcoming
+                              ? AppColors.textoSecundario
+                              : AppColors.azul,
                     ),
                   ),
                   if (subtext.isNotEmpty)
@@ -150,9 +151,10 @@ class _StepRow extends StatelessWidget {
                       subtext,
                       style: TextStyle(
                         fontSize: 12,
-                        color: isRejected
-                            ? AppColors.vermelho
-                            : AppColors.textoSecundario,
+                        color:
+                            isRejected
+                                ? AppColors.vermelho
+                                : AppColors.textoSecundario,
                       ),
                     ),
                 ],
@@ -166,9 +168,10 @@ class _StepRow extends StatelessWidget {
             child: Container(
               width: 2,
               height: 24,
-              color: state == _StepState.upcoming
-                  ? Colors.grey.shade200
-                  : color.withValues(alpha: 0.3),
+              color:
+                  state == _StepState.upcoming
+                      ? Colors.grey.shade200
+                      : color.withValues(alpha: 0.3),
             ),
           ),
       ],

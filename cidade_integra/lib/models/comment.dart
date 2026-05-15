@@ -28,9 +28,10 @@ class Comment {
       author: data['author'] ?? 'Anônimo',
       authorId: data['authorId'] ?? '',
       message: data['message'] ?? '',
-      createdAt: data['createdAt'] is Timestamp
-          ? (data['createdAt'] as Timestamp).toDate()
-          : DateTime.now(),
+      createdAt:
+          data['createdAt'] is Timestamp
+              ? (data['createdAt'] as Timestamp).toDate()
+              : DateTime.now(),
       avatarColor: data['avatarColor'] ?? 0xFF3498DB,
       role: data['role'] ?? 'user',
     );

@@ -23,7 +23,11 @@ class CategoriesSection extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             'Reporte problemas urbanos de diversas categorias e ajude a melhorar a cidade para todos.',
-            style: TextStyle(fontSize: 14, color: AppColors.textoSecundario, height: 1.4),
+            style: TextStyle(
+              fontSize: 14,
+              color: AppColors.textoSecundario,
+              height: 1.4,
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
@@ -53,7 +57,11 @@ class _CategoryCard extends StatelessWidget {
                 color: AppColors.verde.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(50),
               ),
-              child: Icon(category.icon, size: 28, color: AppColors.verdeEscuro),
+              child: Icon(
+                category.icon,
+                size: 28,
+                color: AppColors.verdeEscuro,
+              ),
             ),
             const SizedBox(width: 16),
             Expanded(

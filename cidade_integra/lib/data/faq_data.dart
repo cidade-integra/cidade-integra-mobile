@@ -8,7 +8,11 @@ class FaqCategory {
   final String id;
   final String label;
   final List<FaqItem> items;
-  const FaqCategory({required this.id, required this.label, required this.items});
+  const FaqCategory({
+    required this.id,
+    required this.label,
+    required this.items,
+  });
 }
 
 const faqData = [

@@ -34,7 +34,8 @@ class NotificationService {
 
     await _localNotifications
         .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
+          AndroidFlutterLocalNotificationsPlugin
+        >()
         ?.createNotificationChannel(_channel);
 
     await _localNotifications.initialize(
@@ -52,18 +53,16 @@ class NotificationService {
       final token = await _messaging.getToken();
       if (token != null) {
         await SecureStorageService.saveFcmToken(token);
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(uid)
-            .update({'fcmToken': token});
+        await FirebaseFirestore.instance.collection('users').doc(uid).update({
+          'fcmToken': token,
+        });
       }
 
       _messaging.onTokenRefresh.listen((newToken) {
         SecureStorageService.saveFcmToken(newToken);
-        FirebaseFirestore.instance
-            .collection('users')
-            .doc(uid)
-            .update({'fcmToken': newToken});
+        FirebaseFirestore.instance.collection('users').doc(uid).update({
+          'fcmToken': newToken,
+        });
       });
     } catch (_) {}
   }
