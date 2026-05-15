@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -49,6 +50,16 @@ class _CommentSectionState extends State<CommentSection> {
 
     final auth = context.read<AuthProvider>();
     if (!auth.isLoggedIn) return;
+
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null && !currentUser.emailVerified) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Verifique seu e-mail antes de comentar.')),
+        );
+      }
+      return;
+    }
 
     final rateKey = 'comment_${widget.reportId}';
     if (!await RateLimiter.canPerform(rateKey, maxPerHour: 10)) {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'app_navbar.dart';
 import 'app_drawer.dart';
 import 'app_footer.dart';
+import 'email_verification_banner.dart';
 
 class BaseLayout extends StatelessWidget {
   final Widget child;
@@ -16,6 +17,7 @@ class BaseLayout extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            const EmailVerificationBanner(),
             child,
             const AppFooter(),
           ],

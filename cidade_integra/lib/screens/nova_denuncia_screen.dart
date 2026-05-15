@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
@@ -66,6 +67,16 @@ class _NovaDenunciaScreenState extends State<NovaDenunciaScreen> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null && !currentUser.emailVerified) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Verifique seu e-mail antes de enviar denúncias.')),
+        );
+      }
+      return;
+    }
 
     if (!await RateLimiter.canPerform('create_report', maxPerHour: 5)) {
       if (mounted) {

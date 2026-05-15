@@ -75,10 +75,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
         'status': 'active',
       });
 
+      await cred.user!.sendEmailVerification();
       await AnalyticsService.logRegister();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Cadastro realizado com sucesso!')),
+          const SnackBar(
+            content: Text('Cadastro realizado! Verifique seu e-mail para ativar a conta.'),
+            duration: Duration(seconds: 5),
+          ),
         );
         context.go('/');
       }
