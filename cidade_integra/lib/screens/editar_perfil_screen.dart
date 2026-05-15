@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../models/app_user.dart';
 import '../providers/auth_provider.dart';
+import '../services/privacy_service.dart';
 import '../services/user_service.dart';
 import '../utils/app_theme.dart';
 import '../utils/input_sanitizer.dart';
@@ -136,6 +137,50 @@ class _EditFormState extends State<_EditForm> {
     );
   }
 
+  void _confirmarExclusao() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Excluir Conta'),
+        content: const Text(
+          'Esta ação é IRREVERSÍVEL. Todos os seus dados pessoais serão removidos. '
+          'Suas denúncias permanecerão anonimizadas para fins de interesse público. '
+          'Seus comentários serão atribuídos a "Usuário removido".',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              try {
+                await PrivacyService().deleteAccount(widget.user.uid);
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Conta excluída.')),
+                  );
+                  context.go('/');
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Erro ao excluir: $e')),
+                  );
+                }
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.vermelho,
+            ),
+            child: const Text('Excluir permanentemente'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -249,6 +294,30 @@ class _EditFormState extends State<_EditForm> {
                 const SizedBox(height: 16),
 
                 Text(
+                  'Privacidade e Dados',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.azul,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  height: 48,
+                  child: OutlinedButton.icon(
+                    onPressed: () async {
+                      await PrivacyService().exportUserData(widget.user.uid);
+                    },
+                    icon: const Icon(Icons.download, size: 18),
+                    label: const Text('Exportar meus dados'),
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+                const Divider(),
+                const SizedBox(height: 16),
+
+                Text(
                   'Zona de Perigo',
                   style: TextStyle(
                     fontSize: 16,
@@ -263,6 +332,19 @@ class _EditFormState extends State<_EditForm> {
                     onPressed: _confirmarDesativacao,
                     icon: const Icon(Icons.block, size: 18),
                     label: const Text('Desativar Conta'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.vermelho,
+                      side: const BorderSide(color: AppColors.vermelho),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  height: 48,
+                  child: OutlinedButton.icon(
+                    onPressed: () => _confirmarExclusao(),
+                    icon: const Icon(Icons.delete_forever, size: 18),
+                    label: const Text('Excluir conta e dados'),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppColors.vermelho,
                       side: const BorderSide(color: AppColors.vermelho),
