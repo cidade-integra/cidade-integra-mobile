@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
@@ -113,8 +115,13 @@ class _NovaDenunciaScreenState extends State<NovaDenunciaScreen> {
 
       List<String> imageUrls = [];
       for (final file in _selectedImages) {
-        final url = await SupabaseService().uploadImage(file);
-        imageUrls.add(url);
+        try {
+          final url = await SupabaseService().uploadImage(file);
+          imageUrls.add(url);
+        } on UploadException catch (e) {
+          if (mounted) _showError(e.userMessage);
+          return;
+        }
       }
 
       final coords = await GeocodingService().getCoordinates(endereco);
@@ -146,19 +153,46 @@ class _NovaDenunciaScreenState extends State<NovaDenunciaScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Denúncia enviada com sucesso!')),
+          const SnackBar(
+            content: Text('Denúncia enviada com sucesso!'),
+            backgroundColor: AppColors.verde,
+          ),
         );
         context.go('/denuncias');
       }
-    } catch (e) {
+    } on FirebaseException catch (e, stack) {
+      debugPrint('[NovaDenuncia] FirebaseException: ${e.code} ${e.message}');
+      debugPrintStack(stackTrace: stack);
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Erro ao enviar denúncia: $e')));
+        _showError(
+          'Erro ao salvar no servidor. Tente novamente em instantes.',
+        );
+      }
+    } on SocketException catch (e, stack) {
+      debugPrint('[NovaDenuncia] SocketException: $e');
+      debugPrintStack(stackTrace: stack);
+      if (mounted) {
+        _showError('Sem conexão com a internet. Verifique sua rede.');
+      }
+    } catch (e, stack) {
+      debugPrint('[NovaDenuncia] Erro inesperado: $e');
+      debugPrintStack(stackTrace: stack);
+      if (mounted) {
+        _showError('Não foi possível enviar a denúncia. Tente novamente.');
       }
     } finally {
       if (mounted) setState(() => _loading = false);
     }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppColors.vermelho,
+        duration: const Duration(seconds: 4),
+      ),
+    );
   }
 
   @override
