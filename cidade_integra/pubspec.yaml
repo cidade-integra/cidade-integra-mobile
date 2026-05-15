@@ -64,6 +64,7 @@ dev_dependencies:
   integration_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -79,6 +80,16 @@ flutter:
   assets:
     - assets/images/
     - assets/legal/
+
+flutter_launcher_icons:
+  android: "ic_launcher"
+  ios: true
+  image_path: "assets/images/Logo.png"
+  min_sdk_android: 23
+  background_color_android: "#5BC561"
+  adaptive_icon_background: "#5BC561"
+  adaptive_icon_foreground: "assets/images/Logo.png"
+  remove_alpha_ios: true
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
