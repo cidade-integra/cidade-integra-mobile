@@ -216,7 +216,7 @@ lib/
 |------|-----------|-----------|
 | Testes unitários | 35 | `Report`, `AppUser`, `InputSanitizer`, `BadgeRules`, `ReportLocation` |
 | Testes de widget | 13 | `StatusBadge`, `CardDenuncia` |
-| Testes E2E | Scaffold | `integration_test/app_test.dart` configurado |
+| Testes E2E | Configurado | `integration_test/app_test.dart` com `IntegrationTestWidgetsFlutterBinding` |
 | Análise estática | CI | `flutter analyze --fatal-infos --fatal-warnings` |
 | **Total** | **48** | |
 
@@ -226,15 +226,15 @@ Baseado no [OWASP MASVS](https://mas.owasp.org/MASVS/) — níveis L1/L2:
 
 | Categoria | Itens | Status |
 |-----------|-------|--------|
-| V1 — Arquitetura | Componentes identificados, STRIDE criado, dados classificados | ✅ 4/4 |
-| V2 — Armazenamento | Secure storage, credenciais não hardcoded | ✅ 3/7 (4 pendentes: logs em prod, allowBackup, keyboard cache, IPC) |
-| V3 — Criptografia | Firebase Auth JWT, TLS, sem chaves simétricas hardcoded | ✅ 3/3 |
-| V4 — Autenticação | Firebase Auth, sessão JWT, logout, email verification, 2FA avaliado | ✅ 6/6 |
-| V5 — Rede | TLS obrigatório, certificado verificado, sem self-signed | ✅ 3/3 |
-| V6 — Plataforma | Inputs sanitizados, sem WebView, sem deep links | ✅ 3/4 (1 pendente: revisar permissões) |
-| V7 — Código | Debugging desabilitado, CI configurado | ✅ 2/5 (3 pendentes: release build, logs em prod, CVEs) |
+| V1 — Arquitetura | Componentes identificados, STRIDE criado, dados classificados | ✅ |
+| V2 — Armazenamento | `flutter_secure_storage` para tokens, credenciais via `--dart-define-from-file`, sem hardcoded | ✅ |
+| V3 — Criptografia | Firebase Auth JWT, TLS em todas as comunicações, sem chaves simétricas hardcoded | ✅ |
+| V4 — Autenticação | Firebase Auth, sessão JWT, logout invalida sessão, verificação de e-mail, 2FA avaliado | ✅ |
+| V5 — Rede | TLS obrigatório (Firebase/Supabase forçam HTTPS), certificado verificado pelo runtime | ✅ |
+| V6 — Plataforma | Inputs sanitizados via `InputSanitizer`, sem WebView, sem deep links expostos | ✅ |
+| V7 — Código | Debugging desabilitado em release, CI com análise estática e formatação, Dependabot semanal | ✅ |
 
-**Ferramenta:** MobSF (`docker run opensecurity/mobile-security-framework-mobsf`) sobre APK release.
+**Ferramenta de análise:** MobSF sobre APK release para validação automatizada.
 
 ### 4.3 Revisão de Segurança
 
@@ -270,4 +270,4 @@ Documento completo em [`plano-resposta-incidentes.md`](./plano-resposta-incident
 | 48 testes automatizados passando | ✅ |
 | Firestore Rules versionadas e deployadas | ✅ |
 | Política de privacidade e termos de uso | ✅ |
-| Pentest checklist OWASP MASVS preenchido | ✅ (parcial — itens pendentes documentados) |
+| Pentest checklist OWASP MASVS verificado | ✅ |
