@@ -22,10 +22,12 @@ void main() async {
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  await FirebaseAppCheck.instance.activate(
-    providerAndroid: AndroidPlayIntegrityProvider(),
-    providerApple: AppleAppAttestProvider(),
-  );
+  try {
+    await FirebaseAppCheck.instance.activate(
+      providerAndroid: AndroidPlayIntegrityProvider(),
+      providerApple: AppleAppAttestProvider(),
+    );
+  } catch (_) {}
 
   FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
   PlatformDispatcher.instance.onError = (error, stack) {
