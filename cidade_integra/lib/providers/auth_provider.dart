@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../services/notification_service.dart';
+import '../services/secure_storage_service.dart';
 
 class AuthProvider extends ChangeNotifier {
   User? _user;
@@ -71,6 +72,7 @@ class AuthProvider extends ChangeNotifier {
     try {
       await GoogleSignIn.instance.signOut();
     } catch (_) {}
+    await SecureStorageService.clearAll();
     await FirebaseAuth.instance.signOut();
   }
 

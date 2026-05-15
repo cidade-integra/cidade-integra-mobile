@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'secure_storage_service.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {}
@@ -50,6 +51,7 @@ class NotificationService {
     try {
       final token = await _messaging.getToken();
       if (token != null) {
+        await SecureStorageService.saveFcmToken(token);
         await FirebaseFirestore.instance
             .collection('users')
             .doc(uid)
@@ -57,6 +59,7 @@ class NotificationService {
       }
 
       _messaging.onTokenRefresh.listen((newToken) {
+        SecureStorageService.saveFcmToken(newToken);
         FirebaseFirestore.instance
             .collection('users')
             .doc(uid)
