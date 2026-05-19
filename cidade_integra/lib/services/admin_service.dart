@@ -14,11 +14,17 @@ class AdminService {
       'review': 0,
       'resolved': 0,
       'rejected': 0,
+      'hidden': 0,
     };
 
     for (final doc in snapshot.docs) {
+      final data = doc.data();
+      if (data['isHidden'] == true) {
+        stats['hidden'] = (stats['hidden'] ?? 0) + 1;
+        continue;
+      }
       stats['total'] = (stats['total'] ?? 0) + 1;
-      final status = doc.data()['status'] as String? ?? 'pending';
+      final status = data['status'] as String? ?? 'pending';
       stats[status] = (stats[status] ?? 0) + 1;
     }
     return stats;
@@ -76,6 +82,62 @@ class AdminService {
       'action': 'status_change',
       'newStatus': newStatus,
       'comment': comment,
+    });
+
+    await batch.commit();
+  }
+
+  Future<void> hideReportWithAudit({
+    required String reportId,
+    required String adminUid,
+    required String adminName,
+    String? reason,
+  }) async {
+    final batch = FirebaseFirestore.instance.batch();
+
+    batch.update(_reports.doc(reportId), {
+      'isHidden': true,
+      'hiddenAt': FieldValue.serverTimestamp(),
+      'hiddenBy': adminUid,
+      'hiddenReason': reason,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+
+    final auditRef = FirebaseFirestore.instance.collection('auditLogs').doc();
+    batch.set(auditRef, {
+      'timestamp': FieldValue.serverTimestamp(),
+      'userId': adminUid,
+      'userDisplayName': adminName,
+      'reportId': reportId,
+      'action': 'hide_report',
+      'reason': reason,
+    });
+
+    await batch.commit();
+  }
+
+  Future<void> unhideReportWithAudit({
+    required String reportId,
+    required String adminUid,
+    required String adminName,
+  }) async {
+    final batch = FirebaseFirestore.instance.batch();
+
+    batch.update(_reports.doc(reportId), {
+      'isHidden': false,
+      'hiddenAt': null,
+      'hiddenBy': null,
+      'hiddenReason': null,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+
+    final auditRef = FirebaseFirestore.instance.collection('auditLogs').doc();
+    batch.set(auditRef, {
+      'timestamp': FieldValue.serverTimestamp(),
+      'userId': adminUid,
+      'userDisplayName': adminName,
+      'reportId': reportId,
+      'action': 'unhide_report',
     });
 
     await batch.commit();

@@ -57,6 +57,10 @@ class Report {
   final DateTime createdAt;
   final DateTime updatedAt;
   final DateTime? resolvedAt;
+  final bool isHidden;
+  final DateTime? hiddenAt;
+  final String? hiddenBy;
+  final String? hiddenReason;
 
   const Report({
     required this.id,
@@ -71,6 +75,10 @@ class Report {
     required this.createdAt,
     required this.updatedAt,
     this.resolvedAt,
+    this.isHidden = false,
+    this.hiddenAt,
+    this.hiddenBy,
+    this.hiddenReason,
   });
 
   factory Report.fromFirestore(DocumentSnapshot doc) {
@@ -99,6 +107,11 @@ class Report {
       updatedAt: _toDateTime(data['updatedAt']),
       resolvedAt:
           data['resolvedAt'] != null ? _toDateTime(data['resolvedAt']) : null,
+      isHidden: data['isHidden'] == true,
+      hiddenAt:
+          data['hiddenAt'] != null ? _toDateTime(data['hiddenAt']) : null,
+      hiddenBy: data['hiddenBy'],
+      hiddenReason: data['hiddenReason'],
     );
   }
 
@@ -115,6 +128,10 @@ class Report {
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': Timestamp.fromDate(updatedAt),
       'resolvedAt': resolvedAt != null ? Timestamp.fromDate(resolvedAt!) : null,
+      'isHidden': isHidden,
+      'hiddenAt': hiddenAt != null ? Timestamp.fromDate(hiddenAt!) : null,
+      'hiddenBy': hiddenBy,
+      'hiddenReason': hiddenReason,
     };
   }
 

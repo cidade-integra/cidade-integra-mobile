@@ -8,6 +8,7 @@ class ReportService {
     String? category,
     String? status,
     int? limit,
+    bool includeHidden = false,
   }) async {
     Query query = _collection.orderBy('createdAt', descending: true);
 
@@ -22,16 +23,25 @@ class ReportService {
     }
 
     final snapshot = await query.get();
-    return snapshot.docs.map((doc) => Report.fromFirestore(doc)).toList();
+    final reports =
+        snapshot.docs.map((doc) => Report.fromFirestore(doc)).toList();
+    if (includeHidden) return reports;
+    return reports.where((r) => !r.isHidden).toList();
   }
 
-  Future<List<Report>> getReportsByUser(String userId) async {
+  Future<List<Report>> getReportsByUser(
+    String userId, {
+    bool includeHidden = false,
+  }) async {
     final snapshot =
         await _collection
             .where('userId', isEqualTo: userId)
             .orderBy('createdAt', descending: true)
             .get();
-    return snapshot.docs.map((doc) => Report.fromFirestore(doc)).toList();
+    final reports =
+        snapshot.docs.map((doc) => Report.fromFirestore(doc)).toList();
+    if (includeHidden) return reports;
+    return reports.where((r) => !r.isHidden).toList();
   }
 
   Future<Report?> getReportById(String id) async {
@@ -95,5 +105,32 @@ class ReportService {
 
   Future<void> deleteReport(String id) async {
     await _collection.doc(id).delete();
+  }
+
+  /// Soft-delete: marca a denúncia como oculta, mas mantém no banco.
+  /// O documento continua acessível para admins e para auditoria.
+  Future<void> hideReport({
+    required String id,
+    required String adminUid,
+    String? reason,
+  }) async {
+    await _collection.doc(id).update({
+      'isHidden': true,
+      'hiddenAt': FieldValue.serverTimestamp(),
+      'hiddenBy': adminUid,
+      'hiddenReason': reason,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  /// Reverte o soft-delete, tornando a denúncia visível novamente.
+  Future<void> unhideReport(String id) async {
+    await _collection.doc(id).update({
+      'isHidden': false,
+      'hiddenAt': null,
+      'hiddenBy': null,
+      'hiddenReason': null,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
   }
 }

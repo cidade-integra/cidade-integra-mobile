@@ -35,8 +35,14 @@ service cloud.firestore {
            ]
         && request.resource.data.status == 'pending';
 
+      // Owner can edit own report; admin can edit any.
+      // Only admin can flip the soft-delete flag (isHidden).
       allow update: if isAuth() && (
-        request.auth.uid == resource.data.userId || isAdmin()
+        (
+          request.auth.uid == resource.data.userId
+          && request.resource.data.isHidden == resource.data.get('isHidden', false)
+        )
+        || isAdmin()
       );
 
       allow delete: if isAdmin();

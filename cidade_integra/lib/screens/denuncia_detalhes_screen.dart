@@ -59,6 +59,11 @@ class _DenunciaDetalhesScreenState extends State<DenunciaDetalhesScreen> {
         final report = snapshot.data;
         if (report == null) return _NotFoundState();
 
+        if (report.isHidden) {
+          final auth = context.watch<AuthProvider>();
+          if (!auth.isAdmin) return _NotFoundState();
+        }
+
         return _DetailContent(report: report);
       },
     );

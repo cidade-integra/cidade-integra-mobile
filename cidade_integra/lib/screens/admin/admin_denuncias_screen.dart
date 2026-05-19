@@ -29,6 +29,7 @@ class _AdminDenunciasScreenState extends State<AdminDenunciasScreen> {
   bool _loading = true;
   String _searchQuery = '';
   String? _statusFilter;
+  bool _showHidden = false;
 
   @override
   void initState() {
@@ -47,7 +48,7 @@ class _AdminDenunciasScreenState extends State<AdminDenunciasScreen> {
   Future<void> _load() async {
     setState(() => _loading = true);
     try {
-      final reports = await _reportService.getReports();
+      final reports = await _reportService.getReports(includeHidden: true);
       if (mounted)
         setState(() {
           _allReports = reports;
@@ -59,7 +60,7 @@ class _AdminDenunciasScreenState extends State<AdminDenunciasScreen> {
   }
 
   List<Report> get _filtered {
-    var list = _allReports;
+    var list = _allReports.where((r) => r.isHidden == _showHidden).toList();
     if (_statusFilter != null) {
       list = list.where((r) => r.status.name == _statusFilter).toList();
     }
@@ -68,6 +69,124 @@ class _AdminDenunciasScreenState extends State<AdminDenunciasScreen> {
       list = list.where((r) => r.title.toLowerCase().contains(q)).toList();
     }
     return list;
+  }
+
+  int get _hiddenCount => _allReports.where((r) => r.isHidden).length;
+
+  Future<void> _confirmHide(Report report) async {
+    final reasonController = TextEditingController();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Ocultar denúncia'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'A denúncia "${report.title}" deixará de ser exibida para '
+              'usuários, mas continua salva no banco para auditoria e '
+              'poderá ser restaurada.',
+              style: TextStyle(fontSize: 13, color: AppColors.textoSecundario),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: reasonController,
+              maxLines: 2,
+              maxLength: 200,
+              decoration: const InputDecoration(
+                labelText: 'Motivo (opcional)',
+                hintText: 'Ex.: conteúdo ofensivo, duplicada, spam...',
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.vermelho,
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Ocultar'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    try {
+      final auth = context.read<AuthProvider>();
+      await _adminService.hideReportWithAudit(
+        reportId: report.id,
+        adminUid: auth.user!.uid,
+        adminName: auth.user!.displayName ?? 'Admin',
+        reason: reasonController.text.trim().isEmpty
+            ? null
+            : reasonController.text.trim(),
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Denúncia ocultada.')),
+        );
+        _load();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao ocultar: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _confirmUnhide(Report report) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Restaurar denúncia'),
+        content: Text(
+          'A denúncia "${report.title}" voltará a aparecer publicamente. '
+          'Deseja continuar?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.verde),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Restaurar'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    try {
+      final auth = context.read<AuthProvider>();
+      await _adminService.unhideReportWithAudit(
+        reportId: report.id,
+        adminUid: auth.user!.uid,
+        adminName: auth.user!.displayName ?? 'Admin',
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Denúncia restaurada.')),
+        );
+        _load();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao restaurar: $e')),
+        );
+      }
+    }
   }
 
   void _showChangeStatusDialog(Report report) {
@@ -258,6 +377,29 @@ class _AdminDenunciasScreenState extends State<AdminDenunciasScreen> {
             ),
           ),
         ),
+        const SizedBox(height: 4),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: [
+              FilterChip(
+                avatar: Icon(
+                  _showHidden ? Icons.visibility_off : Icons.visibility,
+                  size: 16,
+                  color: _showHidden ? AppColors.vermelho : AppColors.azul,
+                ),
+                label: Text(
+                  _showHidden
+                      ? 'Vendo ocultas ($_hiddenCount)'
+                      : 'Ver ocultas ($_hiddenCount)',
+                ),
+                selected: _showHidden,
+                onSelected: (v) => setState(() => _showHidden = v),
+                selectedColor: AppColors.vermelho.withValues(alpha: 0.15),
+              ),
+            ],
+          ),
+        ),
         const SizedBox(height: 8),
 
         if (_loading)
@@ -278,35 +420,114 @@ class _AdminDenunciasScreenState extends State<AdminDenunciasScreen> {
         else
           ...List.generate(_filtered.length, (i) {
             final r = _filtered[i];
-            return ListTile(
-              title: Text(
-                r.title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.azul,
+            return Opacity(
+              opacity: r.isHidden ? 0.55 : 1.0,
+              child: ListTile(
+                title: Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        r.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.azul,
+                          decoration: r.isHidden
+                              ? TextDecoration.lineThrough
+                              : null,
+                        ),
+                      ),
+                    ),
+                    if (r.isHidden) ...[
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.vermelho.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          'Oculta',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.vermelho,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
-              ),
-              subtitle: Text(
-                '${r.category.label} · ${dateFormat.format(r.createdAt)}',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: AppColors.textoSecundario,
-                ),
-              ),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  StatusBadge(status: r.status),
-                  const SizedBox(width: 4),
-                  IconButton(
-                    icon: const Icon(Icons.edit_outlined, size: 20),
-                    tooltip: 'Alterar Status',
-                    onPressed: () => _showChangeStatusDialog(r),
+                subtitle: Text(
+                  '${r.category.label} · ${dateFormat.format(r.createdAt)}',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textoSecundario,
                   ),
-                ],
+                ),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    StatusBadge(status: r.status),
+                    const SizedBox(width: 4),
+                    PopupMenuButton<String>(
+                      icon: const Icon(Icons.more_vert, size: 20),
+                      tooltip: 'Ações',
+                      onSelected: (action) {
+                        switch (action) {
+                          case 'status':
+                            _showChangeStatusDialog(r);
+                            break;
+                          case 'hide':
+                            _confirmHide(r);
+                            break;
+                          case 'unhide':
+                            _confirmUnhide(r);
+                            break;
+                        }
+                      },
+                      itemBuilder: (_) => [
+                        const PopupMenuItem(
+                          value: 'status',
+                          child: Row(
+                            children: [
+                              Icon(Icons.edit_outlined, size: 18),
+                              SizedBox(width: 8),
+                              Text('Alterar Status'),
+                            ],
+                          ),
+                        ),
+                        if (r.isHidden)
+                          const PopupMenuItem(
+                            value: 'unhide',
+                            child: Row(
+                              children: [
+                                Icon(Icons.visibility, size: 18),
+                                SizedBox(width: 8),
+                                Text('Restaurar'),
+                              ],
+                            ),
+                          )
+                        else
+                          const PopupMenuItem(
+                            value: 'hide',
+                            child: Row(
+                              children: [
+                                Icon(Icons.visibility_off, size: 18),
+                                SizedBox(width: 8),
+                                Text('Ocultar'),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             );
           }),

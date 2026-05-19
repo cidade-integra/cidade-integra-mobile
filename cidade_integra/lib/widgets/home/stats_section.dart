@@ -22,15 +22,19 @@ class _StatsSectionState extends State<StatsSection> {
   Future<void> _load() async {
     try {
       final col = FirebaseFirestore.instance.collection('reports');
-      final totalSnap = await col.count().get();
-      final resolvedSnap = await col
-          .where('status', isEqualTo: 'resolved')
-          .count()
-          .get();
+      final snap = await col.get();
+      var total = 0;
+      var resolvidas = 0;
+      for (final doc in snap.docs) {
+        final data = doc.data();
+        if (data['isHidden'] == true) continue;
+        total++;
+        if (data['status'] == 'resolved') resolvidas++;
+      }
       if (mounted) {
         setState(() {
-          _total = totalSnap.count ?? 0;
-          _resolvidas = resolvedSnap.count ?? 0;
+          _total = total;
+          _resolvidas = resolvidas;
         });
       }
     } catch (_) {
