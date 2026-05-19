@@ -35,15 +35,20 @@ class Env {
     defaultValue: 'https://viacep.com.br/ws',
   );
 
-  /// Lança [StateError] se algum segredo crítico estiver vazio,
-  /// indicando que o app foi compilado sem `--dart-define-from-file`.
-  static void assertConfigured() {
-    final missing = <String>[
+  /// Retorna a lista de segredos críticos que estão vazios.
+  /// Vazia quando tudo está configurado.
+  static List<String> missingSecrets() {
+    return <String>[
       if (supabaseUrl.isEmpty) 'SUPABASE_URL',
       if (supabaseAnonKey.isEmpty) 'SUPABASE_ANON_KEY',
       if (googleServerClientId.isEmpty) 'GOOGLE_SERVER_CLIENT_ID',
     ];
+  }
 
+  /// Lança [StateError] se algum segredo crítico estiver vazio,
+  /// indicando que o app foi compilado sem `--dart-define-from-file`.
+  static void assertConfigured() {
+    final missing = missingSecrets();
     if (missing.isNotEmpty) {
       throw StateError(
         'Segredos ausentes: ${missing.join(', ')}.\n'

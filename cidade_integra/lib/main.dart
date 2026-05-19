@@ -13,12 +13,19 @@ import 'firebase_options.dart';
 import 'providers/auth_provider.dart';
 import 'utils/app_theme.dart';
 import 'routes/app_router.dart';
+import 'screens/config_error_screen.dart';
 import 'screens/splash_screen.dart';
 import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  Env.assertConfigured();
+
+  final missingSecrets = Env.missingSecrets();
+  if (missingSecrets.isNotEmpty) {
+    debugPrint('[Cidade Integra] Segredos ausentes: $missingSecrets');
+    runApp(ConfigErrorScreen(missing: missingSecrets));
+    return;
+  }
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
