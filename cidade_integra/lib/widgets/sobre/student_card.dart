@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../data/equipe.dart';
 import '../../utils/app_theme.dart';
 
@@ -63,18 +64,14 @@ class StudentCard extends StatelessWidget {
                   _SocialButton(
                     icon: Icons.code,
                     tooltip: 'GitHub',
-                    onTap: () {
-                      // TODO: abrir link com url_launcher no Milestone 10
-                    },
+                    onTap: () => _open(member.github),
                   ),
                 if (member.linkedin.isNotEmpty) ...[
                   const SizedBox(width: 12),
                   _SocialButton(
                     icon: Icons.person,
                     tooltip: 'LinkedIn',
-                    onTap: () {
-                      // TODO: abrir link com url_launcher no Milestone 10
-                    },
+                    onTap: () => _open(member.linkedin),
                   ),
                 ],
               ],
@@ -84,6 +81,11 @@ class StudentCard extends StatelessWidget {
       ),
     );
   }
+}
+
+Future<void> _open(String url) async {
+  final uri = Uri.parse(url);
+  await launchUrl(uri, mode: LaunchMode.externalApplication);
 }
 
 class _SocialButton extends StatelessWidget {

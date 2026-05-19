@@ -14,6 +14,7 @@ import '../screens/recuperar_senha_screen.dart';
 import '../screens/perfil_screen.dart';
 import '../screens/sobre_screen.dart';
 import '../screens/faq_screen.dart';
+import '../screens/legal_screen.dart';
 import '../screens/access_denied_screen.dart';
 import '../screens/not_found_screen.dart';
 import '../screens/admin/admin_dashboard_screen.dart';
@@ -149,6 +150,16 @@ GoRouter buildRouter(AuthProvider auth) {
         pageBuilder:
             (context, state) =>
                 const NoTransitionPage(child: AccessDeniedScreen()),
+      ),
+      GoRoute(
+        path: '/legal/termos',
+        pageBuilder: (context, state) =>
+            const NoTransitionPage(child: LegalScreen(kind: LegalKind.termos)),
+      ),
+      GoRoute(
+        path: '/legal/privacidade',
+        pageBuilder: (context, state) =>
+            const NoTransitionPage(child: LegalScreen(kind: LegalKind.politica)),
       ),
     ],
   );

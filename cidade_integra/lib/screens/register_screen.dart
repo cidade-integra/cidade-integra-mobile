@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -73,7 +74,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
             'status': 'active',
           });
 
-      await cred.user!.sendEmailVerification();
+      try {
+        await cred.user!.sendEmailVerification();
+      } catch (e, s) {
+        debugPrint('[Register] sendEmailVerification falhou: $e');
+        debugPrintStack(stackTrace: s);
+      }
       await AnalyticsService.logRegister();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -86,16 +92,32 @@ class _RegisterScreenState extends State<RegisterScreen> {
         );
         context.go('/');
       }
-    } on FirebaseAuthException catch (e) {
+    } on FirebaseAuthException catch (e, s) {
+      debugPrint('[Register] FirebaseAuthException: ${e.code} ${e.message}');
+      debugPrintStack(stackTrace: s);
       if (mounted) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text(mapAuthError(e.code))));
       }
-    } catch (_) {
+    } on FirebaseException catch (e, s) {
+      debugPrint('[Register] FirebaseException: ${e.code} ${e.message}');
+      debugPrintStack(stackTrace: s);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Erro inesperado. Tente novamente.')),
+          SnackBar(
+            content: Text(
+              'Erro ao salvar perfil: ${e.message ?? e.code}',
+            ),
+          ),
+        );
+      }
+    } catch (e, s) {
+      debugPrint('[Register] Erro inesperado: $e');
+      debugPrintStack(stackTrace: s);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro inesperado: $e')),
         );
       }
     } finally {
@@ -348,37 +370,40 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   visualDensity: VisualDensity.compact,
                 ),
                 Expanded(
-                  child: GestureDetector(
-                    onTap:
-                        () => setState(() => _aceitouTermos = !_aceitouTermos),
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: Text.rich(
-                        TextSpan(
-                          text: 'Li e aceito os ',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: AppColors.textoSecundario,
-                          ),
-                          children: [
-                            TextSpan(
-                              text: 'Termos de Uso',
-                              style: TextStyle(
-                                color: AppColors.verde,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const TextSpan(text: ' e a '),
-                            TextSpan(
-                              text: 'Política de Privacidade',
-                              style: TextStyle(
-                                color: AppColors.verde,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const TextSpan(text: '.'),
-                          ],
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text.rich(
+                      TextSpan(
+                        text: 'Li e aceito os ',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: AppColors.textoSecundario,
                         ),
+                        children: [
+                          TextSpan(
+                            text: 'Termos de Uso',
+                            style: TextStyle(
+                              color: AppColors.verde,
+                              fontWeight: FontWeight.w600,
+                              decoration: TextDecoration.underline,
+                            ),
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () => context.push('/legal/termos'),
+                          ),
+                          const TextSpan(text: ' e a '),
+                          TextSpan(
+                            text: 'Política de Privacidade',
+                            style: TextStyle(
+                              color: AppColors.verde,
+                              fontWeight: FontWeight.w600,
+                              decoration: TextDecoration.underline,
+                            ),
+                            recognizer: TapGestureRecognizer()
+                              ..onTap =
+                                  () => context.push('/legal/privacidade'),
+                          ),
+                          const TextSpan(text: '.'),
+                        ],
                       ),
                     ),
                   ),
