@@ -335,7 +335,7 @@ class _CommentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final timeAgo = _formatTimeAgo(comment.createdAt);
+    final timeAgo = _formatTimeAgo(comment.displayDate);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -414,10 +414,13 @@ class _CommentCard extends StatelessWidget {
                       ],
                     ),
                     Text(
-                      timeAgo,
+                      comment.wasEdited ? '$timeAgo · editado' : timeAgo,
                       style: TextStyle(
                         fontSize: 11,
                         color: AppColors.textoSecundario,
+                        fontStyle: comment.wasEdited
+                            ? FontStyle.italic
+                            : FontStyle.normal,
                       ),
                     ),
                   ],

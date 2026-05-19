@@ -6,6 +6,7 @@ class Comment {
   final String authorId;
   final String message;
   final DateTime createdAt;
+  final DateTime? editedAt;
   final int avatarColor;
   final String role;
 
@@ -15,11 +16,14 @@ class Comment {
     required this.authorId,
     required this.message,
     required this.createdAt,
+    this.editedAt,
     this.avatarColor = 0xFF3498DB,
     this.role = 'user',
   });
 
   bool get isAdmin => role == 'admin';
+  bool get wasEdited => editedAt != null;
+  DateTime get displayDate => editedAt ?? createdAt;
 
   factory Comment.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
@@ -32,6 +36,9 @@ class Comment {
           data['createdAt'] is Timestamp
               ? (data['createdAt'] as Timestamp).toDate()
               : DateTime.now(),
+      editedAt: data['editedAt'] is Timestamp
+          ? (data['editedAt'] as Timestamp).toDate()
+          : null,
       avatarColor: data['avatarColor'] ?? 0xFF3498DB,
       role: data['role'] ?? 'user',
     );
