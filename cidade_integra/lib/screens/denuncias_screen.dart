@@ -4,6 +4,7 @@ import '../models/report.dart';
 import '../services/report_service.dart';
 import '../utils/app_theme.dart';
 import '../utils/rate_limiter.dart';
+import '../utils/refresh_scope.dart';
 import '../widgets/denuncias/card_denuncia.dart';
 
 class DenunciasScreen extends StatefulWidget {
@@ -31,6 +32,7 @@ class _DenunciasScreenState extends State<DenunciasScreen> {
   @override
   void initState() {
     super.initState();
+    RefreshScope.register(_loadReports);
     _loadReports();
   }
 

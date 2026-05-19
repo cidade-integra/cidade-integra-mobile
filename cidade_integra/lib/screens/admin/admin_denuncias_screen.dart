@@ -7,6 +7,7 @@ import '../../providers/auth_provider.dart';
 import '../../services/admin_service.dart';
 import '../../services/report_service.dart';
 import '../../utils/rate_limiter.dart';
+import '../../utils/refresh_scope.dart';
 import '../../utils/app_theme.dart';
 import '../../services/export_service.dart';
 import '../../widgets/denuncias/status_badge.dart';
@@ -32,6 +33,7 @@ class _AdminDenunciasScreenState extends State<AdminDenunciasScreen> {
   @override
   void initState() {
     super.initState();
+    RefreshScope.register(_load);
     _load();
   }
 

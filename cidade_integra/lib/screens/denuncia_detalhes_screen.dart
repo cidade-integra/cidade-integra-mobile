@@ -8,21 +8,48 @@ import '../services/report_service.dart';
 import '../services/analytics_service.dart';
 import '../services/saved_reports_service.dart';
 import '../utils/app_theme.dart';
+import '../utils/refresh_scope.dart';
 import '../widgets/denuncias/comment_section.dart';
 import '../widgets/denuncias/mapa_denuncia.dart';
 import '../widgets/denuncias/status_badge.dart';
 
-class DenunciaDetalhesScreen extends StatelessWidget {
+class DenunciaDetalhesScreen extends StatefulWidget {
   final String reportId;
   const DenunciaDetalhesScreen({super.key, required this.reportId});
 
   @override
+  State<DenunciaDetalhesScreen> createState() => _DenunciaDetalhesScreenState();
+}
+
+class _DenunciaDetalhesScreenState extends State<DenunciaDetalhesScreen> {
+  Future<Report?>? _future;
+
+  String get reportId => widget.reportId;
+
+  @override
+  void initState() {
+    super.initState();
+    RefreshScope.register(_refresh);
+    _future = ReportService().getReportById(widget.reportId);
+  }
+
+  Future<void> _refresh() async {
+    setState(() {
+      _future = ReportService().getReportById(widget.reportId);
+    });
+    await _future;
+  }
+
+  @override
   Widget build(BuildContext context) {
     return FutureBuilder<Report?>(
-      future: ReportService().getReportById(reportId),
+      future: _future,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return const SizedBox(
+            height: 480,
+            child: Center(child: CircularProgressIndicator()),
+          );
         }
 
         if (snapshot.hasError) {

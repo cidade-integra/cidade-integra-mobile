@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../models/report.dart';
 import '../../services/admin_service.dart';
 import '../../utils/app_theme.dart';
+import '../../utils/refresh_scope.dart';
 import '../../widgets/denuncias/status_badge.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
@@ -23,6 +24,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   @override
   void initState() {
     super.initState();
+    RefreshScope.register(_load);
     _load();
   }
 
@@ -49,7 +51,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     if (_loading) {
-      return const Center(child: CircularProgressIndicator());
+      return const SizedBox(
+        height: 480,
+        child: Center(child: CircularProgressIndicator()),
+      );
     }
 
     return Column(
