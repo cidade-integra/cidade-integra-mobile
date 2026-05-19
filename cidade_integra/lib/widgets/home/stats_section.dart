@@ -1,21 +1,54 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../../utils/app_theme.dart';
 
-class StatsSection extends StatelessWidget {
+class StatsSection extends StatefulWidget {
   const StatsSection({super.key});
 
   @override
+  State<StatsSection> createState() => _StatsSectionState();
+}
+
+class _StatsSectionState extends State<StatsSection> {
+  int? _total;
+  int? _resolvidas;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    try {
+      final col = FirebaseFirestore.instance.collection('reports');
+      final totalSnap = await col.count().get();
+      final resolvedSnap = await col
+          .where('status', isEqualTo: 'resolved')
+          .count()
+          .get();
+      if (mounted) {
+        setState(() {
+          _total = totalSnap.count ?? 0;
+          _resolvidas = resolvedSnap.count ?? 0;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() { _total = 0; _resolvidas = 0; });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // TODO: substituir por dados reais do Firestore no Milestone 5
     final stats = [
       _StatData(
         icon: Icons.campaign,
-        value: '150+',
+        value: _total == null ? '...' : '$_total',
         label: 'Denúncias Registradas',
       ),
       _StatData(
         icon: Icons.check_circle,
-        value: '50+',
+        value: _resolvidas == null ? '...' : '$_resolvidas',
         label: 'Problemas Resolvidos',
       ),
       _StatData(

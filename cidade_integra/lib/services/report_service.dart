@@ -53,7 +53,10 @@ class ReportService {
       await FirebaseFirestore.instance
           .collection('users')
           .doc(report.userId)
-          .update({'reportCount': FieldValue.increment(1)});
+          .update({
+            'reportCount': FieldValue.increment(1),
+            'score': FieldValue.increment(10),
+          });
     }
 
     return docRef.id;
@@ -69,7 +72,20 @@ class ReportService {
       data['resolvedAt'] = FieldValue.serverTimestamp();
     }
 
+    final report = await getReportById(id);
     await _collection.doc(id).update(data);
+
+    if (status == ReportStatus.resolved &&
+        report != null &&
+        report.userId != null &&
+        report.status != ReportStatus.resolved) {
+      try {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(report.userId)
+            .update({'score': FieldValue.increment(20)});
+      } catch (_) {}
+    }
   }
 
   Future<void> updateReport(String id, Map<String, dynamic> updates) async {

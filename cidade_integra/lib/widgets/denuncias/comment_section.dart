@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -90,6 +91,12 @@ class _CommentSectionState extends State<CommentSection> {
         role: auth.role,
       );
       await _service.addComment(widget.reportId, comment);
+      try {
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(auth.user!.uid)
+            .update({'score': FieldValue.increment(2)});
+      } catch (_) {}
       await AnalyticsService.logAddComment(widget.reportId);
       _controller.clear();
     } catch (_) {
@@ -100,6 +107,86 @@ class _CommentSectionState extends State<CommentSection> {
       }
     } finally {
       if (mounted) setState(() => _sending = false);
+    }
+  }
+
+  Future<void> _editComment(Comment c) async {
+    final controller = TextEditingController(text: c.message);
+    final result = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Editar comentário'),
+        content: TextField(
+          controller: controller,
+          maxLines: 4,
+          maxLength: _maxLength,
+          decoration: const InputDecoration(
+            hintText: 'Editar mensagem...',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, controller.text.trim()),
+            child: const Text('Salvar'),
+          ),
+        ],
+      ),
+    );
+    if (result == null || result.isEmpty || result.length < _minLength) return;
+    final clean = InputSanitizer.sanitize(result);
+    if (InputSanitizer.containsBlockedWords(clean)) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('O comentário contém palavras inadequadas.')),
+      );
+      return;
+    }
+    try {
+      await _service.updateComment(widget.reportId, c.id, clean);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Erro ao editar.')),
+        );
+      }
+    }
+  }
+
+  Future<void> _deleteComment(Comment c) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Apagar comentário'),
+        content: const Text('Deseja realmente apagar este comentário?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.vermelho,
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Apagar'),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true) return;
+    try {
+      await _service.deleteComment(widget.reportId, c.id);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Erro ao apagar.')),
+        );
+      }
     }
   }
 
@@ -210,9 +297,18 @@ class _CommentSectionState extends State<CommentSection> {
                     );
                   }
 
+                  final currentUid = auth.user?.uid;
                   return Column(
-                    children:
-                        comments.map((c) => _CommentCard(comment: c)).toList(),
+                    children: comments.map((c) {
+                      final isOwner =
+                          currentUid != null && currentUid == c.authorId;
+                      return _CommentCard(
+                        comment: c,
+                        isOwner: isOwner,
+                        onEdit: isOwner ? () => _editComment(c) : null,
+                        onDelete: isOwner ? () => _deleteComment(c) : null,
+                      );
+                    }).toList(),
                   );
                 },
               ),
@@ -226,7 +322,16 @@ class _CommentSectionState extends State<CommentSection> {
 
 class _CommentCard extends StatelessWidget {
   final Comment comment;
-  const _CommentCard({required this.comment});
+  final bool isOwner;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
+
+  const _CommentCard({
+    required this.comment,
+    this.isOwner = false,
+    this.onEdit,
+    this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -318,6 +423,40 @@ class _CommentCard extends StatelessWidget {
                   ],
                 ),
               ),
+              if (isOwner)
+                PopupMenuButton<String>(
+                  icon: Icon(
+                    Icons.more_vert,
+                    size: 18,
+                    color: AppColors.textoSecundario,
+                  ),
+                  onSelected: (v) {
+                    if (v == 'edit') onEdit?.call();
+                    if (v == 'delete') onDelete?.call();
+                  },
+                  itemBuilder: (_) => const [
+                    PopupMenuItem(
+                      value: 'edit',
+                      child: Row(
+                        children: [
+                          Icon(Icons.edit_outlined, size: 16),
+                          SizedBox(width: 8),
+                          Text('Editar'),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: 'delete',
+                      child: Row(
+                        children: [
+                          Icon(Icons.delete_outline, size: 16),
+                          SizedBox(width: 8),
+                          Text('Apagar'),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
             ],
           ),
           const SizedBox(height: 10),

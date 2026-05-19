@@ -5,30 +5,69 @@ import '../models/app_user.dart';
 import '../providers/auth_provider.dart';
 import '../services/user_service.dart';
 import '../utils/app_theme.dart';
+import '../utils/refresh_scope.dart';
 import '../widgets/perfil/badges_display.dart';
 import '../widgets/perfil/minhas_denuncias.dart';
+import '../widgets/perfil/score_explainer.dart';
 
-class PerfilScreen extends StatelessWidget {
+class PerfilScreen extends StatefulWidget {
   const PerfilScreen({super.key});
+
+  @override
+  State<PerfilScreen> createState() => _PerfilScreenState();
+}
+
+class _PerfilScreenState extends State<PerfilScreen> {
+  Future<AppUser?>? _future;
+
+  @override
+  void initState() {
+    super.initState();
+    RefreshScope.register(_refresh);
+    _scheduleLoad();
+  }
+
+  void _scheduleLoad() {
+    final auth = context.read<AuthProvider>();
+    if (auth.isLoggedIn) {
+      _future = UserService().getUserById(auth.user!.uid);
+    }
+  }
+
+  Future<void> _refresh() async {
+    setState(_scheduleLoad);
+    await _future;
+  }
 
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
 
     if (!auth.isLoggedIn) {
-      return const Center(child: Text('Faça login para ver seu perfil.'));
+      return const SizedBox(
+        height: 400,
+        child: Center(child: Text('Faça login para ver seu perfil.')),
+      );
     }
 
+    _future ??= UserService().getUserById(auth.user!.uid);
+
     return FutureBuilder<AppUser?>(
-      future: UserService().getUserById(auth.user!.uid),
+      future: _future,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return const SizedBox(
+            height: 400,
+            child: Center(child: CircularProgressIndicator()),
+          );
         }
 
         final user = snapshot.data;
         if (user == null) {
-          return const Center(child: Text('Usuário não encontrado.'));
+          return const SizedBox(
+            height: 400,
+            child: Center(child: Text('Usuário não encontrado.')),
+          );
         }
 
         return _ProfileContent(user: user);
@@ -165,6 +204,8 @@ class _ProfileContent extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: BadgesDisplay(user: user),
         ),
+        const SizedBox(height: 8),
+        const ScoreExplainer(),
         const SizedBox(height: 16),
 
         MinhasDenuncias(userId: user.uid),

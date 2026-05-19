@@ -171,14 +171,19 @@ extension ReportCategoryLabel on ReportCategory {
   }
 
   IconData get icon {
-    const icons = {
-      ReportCategory.buracos: 0xe3b6, // Icons.warning
-      ReportCategory.iluminacao: 0xe3a9, // Icons.lightbulb
-      ReportCategory.lixo: 0xe1bb, // Icons.delete
-      ReportCategory.vazamentos: 0xe798, // Icons.water_drop
-      ReportCategory.areasVerdes: 0xe3be, // Icons.park
-      ReportCategory.outros: 0xe3c0, // Icons.more_horiz
-    };
-    return IconData(icons[this]!, fontFamily: 'MaterialIcons');
+    switch (this) {
+      case ReportCategory.buracos:
+        return Icons.warning_amber_rounded;
+      case ReportCategory.iluminacao:
+        return Icons.lightbulb_outline;
+      case ReportCategory.lixo:
+        return Icons.delete_outline;
+      case ReportCategory.vazamentos:
+        return Icons.water_drop_outlined;
+      case ReportCategory.areasVerdes:
+        return Icons.park_outlined;
+      case ReportCategory.outros:
+        return Icons.more_horiz;
+    }
   }
 }
