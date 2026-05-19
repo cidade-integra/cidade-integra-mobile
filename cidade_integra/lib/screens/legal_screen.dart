@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../utils/app_theme.dart';
 
 enum LegalKind { termos, politica }
@@ -49,14 +51,73 @@ class _LegalScreenState extends State<LegalScreen> {
       ),
       body: _content == null
           ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
+          : Markdown(
+              data: _content!,
               padding: const EdgeInsets.all(20),
-              child: Text(
-                _content!,
-                style: TextStyle(
+              onTapLink: (text, href, title) async {
+                if (href == null) return;
+                final uri = Uri.tryParse(href);
+                if (uri == null) return;
+                await launchUrl(uri, mode: LaunchMode.externalApplication);
+              },
+              styleSheet: MarkdownStyleSheet(
+                p: TextStyle(
                   fontSize: 14,
-                  height: 1.5,
+                  height: 1.55,
                   color: AppColors.preto,
+                ),
+                h1: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.azul,
+                  height: 1.3,
+                ),
+                h2: TextStyle(
+                  fontSize: 19,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.azul,
+                  height: 1.4,
+                ),
+                h3: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.azul,
+                  height: 1.4,
+                ),
+                h1Padding: const EdgeInsets.only(top: 4, bottom: 8),
+                h2Padding: const EdgeInsets.only(top: 18, bottom: 6),
+                h3Padding: const EdgeInsets.only(top: 12, bottom: 4),
+                listBullet: TextStyle(
+                  fontSize: 14,
+                  color: AppColors.preto,
+                ),
+                strong: const TextStyle(fontWeight: FontWeight.w700),
+                em: const TextStyle(fontStyle: FontStyle.italic),
+                a: TextStyle(
+                  color: AppColors.verde,
+                  decoration: TextDecoration.underline,
+                ),
+                blockquote: TextStyle(
+                  fontSize: 14,
+                  fontStyle: FontStyle.italic,
+                  color: AppColors.textoSecundario,
+                ),
+                blockquoteDecoration: BoxDecoration(
+                  color: AppColors.verde.withValues(alpha: 0.06),
+                  border: Border(
+                    left: BorderSide(color: AppColors.verde, width: 3),
+                  ),
+                ),
+                blockquotePadding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+                code: TextStyle(
+                  fontFamily: 'monospace',
+                  fontSize: 13,
+                  backgroundColor: Colors.grey.shade100,
+                ),
+                horizontalRuleDecoration: BoxDecoration(
+                  border: Border(
+                    top: BorderSide(color: AppColors.bordas, width: 1),
+                  ),
                 ),
               ),
             ),
