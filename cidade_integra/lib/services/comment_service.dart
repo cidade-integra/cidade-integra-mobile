@@ -22,4 +22,19 @@ class CommentService {
   Future<void> addComment(String reportId, Comment comment) async {
     await _commentsRef(reportId).add(comment.toFirestore());
   }
+
+  Future<void> updateComment(
+    String reportId,
+    String commentId,
+    String newMessage,
+  ) async {
+    await _commentsRef(reportId).doc(commentId).update({
+      'message': newMessage,
+      'editedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Future<void> deleteComment(String reportId, String commentId) async {
+    await _commentsRef(reportId).doc(commentId).delete();
+  }
 }

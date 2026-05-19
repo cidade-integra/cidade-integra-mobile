@@ -4,6 +4,7 @@ import '../../models/app_user.dart';
 import '../../services/admin_service.dart';
 import '../../services/export_service.dart';
 import '../../utils/rate_limiter.dart';
+import '../../utils/refresh_scope.dart';
 import '../../utils/app_theme.dart';
 
 class AdminUsuariosScreen extends StatefulWidget {
@@ -21,10 +22,13 @@ class _AdminUsuariosScreenState extends State<AdminUsuariosScreen> {
   List<AppUser> _allUsers = [];
   bool _loading = true;
   String _searchQuery = '';
+  int _currentPage = 0;
+  static const _pageSize = 10;
 
   @override
   void initState() {
     super.initState();
+    RefreshScope.register(_load);
     _load();
   }
 
@@ -60,6 +64,15 @@ class _AdminUsuariosScreenState extends State<AdminUsuariosScreen> {
         )
         .toList();
   }
+
+  List<AppUser> get _paged {
+    final start = _currentPage * _pageSize;
+    if (start >= _filtered.length) return [];
+    return _filtered.skip(start).take(_pageSize).toList();
+  }
+
+  int get _totalPages =>
+      _filtered.isEmpty ? 1 : (_filtered.length / _pageSize).ceil();
 
   void _confirmRoleChange(AppUser user) {
     final newRole = user.role == 'admin' ? 'user' : 'admin';
@@ -200,7 +213,12 @@ class _AdminUsuariosScreenState extends State<AdminUsuariosScreen> {
             controller: _searchController,
             onChanged:
                 (v) => _debouncer.call(() {
-                  if (mounted) setState(() => _searchQuery = v);
+                  if (mounted) {
+                    setState(() {
+                      _searchQuery = v;
+                      _currentPage = 0;
+                    });
+                  }
                 }),
             decoration: InputDecoration(
               hintText: 'Buscar por nome ou email...',
@@ -234,15 +252,59 @@ class _AdminUsuariosScreenState extends State<AdminUsuariosScreen> {
               ),
             ),
           )
-        else
-          ...List.generate(_filtered.length, (i) {
-            final u = _filtered[i];
+        else ...[
+          ...List.generate(_paged.length, (i) {
+            final u = _paged[i];
             return _UserTile(
               user: u,
               onRoleChange: () => _confirmRoleChange(u),
               onStatusChange: () => _confirmStatusChange(u),
             );
           }),
+          if (_filtered.length > _pageSize)
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '${_filtered.length} usuário(s)',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: AppColors.textoSecundario,
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.chevron_left),
+                        onPressed: _currentPage > 0
+                            ? () => setState(() => _currentPage--)
+                            : null,
+                      ),
+                      Text(
+                        '${_currentPage + 1} / $_totalPages',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.azul,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.chevron_right),
+                        onPressed: _currentPage < _totalPages - 1
+                            ? () => setState(() => _currentPage++)
+                            : null,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+        ],
       ],
     );
   }
