@@ -86,6 +86,18 @@ class _CidadeIntegraAppState extends State<CidadeIntegraApp> {
         debugShowCheckedModeBanner: false,
         theme: AppTheme.light,
         routerConfig: widget.router,
+        builder: (context, child) {
+          final media = MediaQuery.of(context);
+          return MediaQuery(
+            data: media.copyWith(
+              textScaler: media.textScaler.clamp(
+                minScaleFactor: 0.85,
+                maxScaleFactor: 2.0,
+              ),
+            ),
+            child: child!,
+          );
+        },
       ),
     );
   }
