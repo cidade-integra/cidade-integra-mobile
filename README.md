@@ -111,16 +111,6 @@ functions/                  # Cloud Functions (setAdminClaim, logAuditEvent)
 
 ## Documentação
 
-- [`planning/sdl.md`](planning/sdl.md) — **SDL (Security Development Lifecycle)** — documento único de segurança, inclui matriz LGPD do ciclo de conta (active/suspended/banned/deleted) e roadmap pós-v1
+- [`planning/sdl.md`](planning/sdl.md) — **SDL (Security Development Lifecycle)** — documento único de segurança, inclui matriz LGPD do ciclo de conta (active/suspended/banned/deleted)
 - [`planning/plano-resposta-incidentes.md`](planning/plano-resposta-incidentes.md) — Plano de Resposta a Incidentes
 - [`planning/planejamento-tasks.md`](planning/planejamento-tasks.md) — Plano de desenvolvimento (10 milestones, ~40 tasks)
-
-## FAQ rápida para testadores
-
-| Comportamento | Por que é assim |
-|---------------|-----------------|
-| App pede permissão para abrir LinkedIn/GitHub no browser externo | É intencional (`LaunchMode.externalApplication`) — similar ao `target="_blank"` da web |
-| Pinch-to-zoom não funciona em qualquer tela | Plataforma não suporta. Use o tamanho de fonte do sistema (Configurações → Tela) para escalar tudo até 2x. Imagens permitem pinch-to-zoom quando abertas em fullscreen |
-| Botão voltar do Android volta uma tela em vez de fechar o app | Implementado via `PopScope` no `BaseLayout`. Só fecha o app quando você está em `/` |
-| Conta desativada consegue logar de novo | É o caminho de **reativação voluntária**: o login mostra um banner com botão "Reativar". Se quiser bloquear definitivamente, um admin precisa **banir** a conta |
-| Excluir conta dá erro de permissão em versões antigas | Foi corrigido — agora anonimiza o doc em vez de tentar deletar |

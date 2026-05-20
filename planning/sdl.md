@@ -48,10 +48,9 @@
 #### 1.2.6 Usabilidade & Acessibilidade
 - Identidade visual consistente (`AppTheme`).
 - `Semantics` e `semanticLabel` em ícones e imagens (compatível com TalkBack/VoiceOver).
-- `MediaQuery.textScaler` respeita as preferências de tamanho de fonte do sistema (clamp 0.85x – 2.0x) — é o equivalente recomendado pelo Material Design ao "zoom" do navegador. O usuário aumenta o texto em Configurações → Tela → Tamanho da fonte e o app inteiro escala junto.
-- Pinch-to-zoom disponível **no conteúdo das imagens** (`InteractiveViewer` na visualização fullscreen). Pinch-to-zoom sobre toda a UI não é suportado pela plataforma e o Material Design não recomenda — a escala de texto cobre esse caso.
+- `MediaQuery.textScaler` respeita o tamanho de fonte do sistema (clamp 0.85x – 2.0x), permitindo que o usuário escale toda a UI via Configurações → Tela → Tamanho da fonte.
+- Pinch-to-zoom em imagens via `InteractiveViewer` na visualização fullscreen.
 - Pull-to-refresh em todas as listagens.
-- VLibras (intérprete Libras): hoje só existe como widget web/extensão; **não há SDK Flutter oficial**. Alternativas viáveis para futuro: Hand Talk (SDK Android/iOS pago) ou link externo para vlibras.gov.br quando o usuário tocar em um botão "Libras". Documentado como ROADMAP — não implementado nesta versão.
 
 #### 1.2.7 Conformidade
 - **LGPD:** Denúncia anônima (com índice privado `users/{uid}/meusReports` para que o autor consiga ver as próprias mesmo quando anônimas publicamente), exportação de dados pessoais (JSON), exclusão de conta com anonimização (ver matriz em 1.4), política de privacidade (`assets/legal/politica_privacidade.md`), termos de uso (`assets/legal/termos_de_uso.md`), consentimento explícito no registro (checkbox + links clicáveis), minimização de dados (campos `bio` e `region` removidos por não serem necessários ao propósito do app — princípio da necessidade, art. 6º, III).
@@ -309,17 +308,3 @@ Documento completo em [`plano-resposta-incidentes.md`](./plano-resposta-incident
 | Pentest checklist OWASP MASVS verificado | ✅ |
 | Soft-delete administrativo de denúncias com auditoria | ✅ |
 | Ciclo completo de conta (suspended/banned/deleted) com login bloqueado | ✅ |
-
----
-
-## Roadmap pós-v1
-
-Itens que surgiram em testes mas foram registrados como roadmap para não atrasar o release acadêmico.
-
-| Item | Tipo | Por que ficou fora desta versão |
-|------|------|----------------------------------|
-| VLibras embutido | Acessibilidade | Não há SDK Flutter oficial. Alternativas (Hand Talk SDK) exigem licença comercial. Solução acessível mas funcional: link externo para vlibras.gov.br. |
-| Validação rígida de endereço (CEP + número obrigatórios) | UX | Dificulta o uso por usuários em áreas sem CEP catalogado. Optamos por validação suave: avisar quando o geocoding falha mas permitir prosseguir. |
-| Pinch-to-zoom em toda a UI | Acessibilidade | Não é suportado pelo Material Design — quebraria gestos do app. Cobertura adequada já existe via `textScaler` (até 2x) e `InteractiveViewer` em imagens. |
-| Reativação automática ao tentar logar suspenso | UX | Hoje exigimos toque explícito em "Reativar" — registro de consentimento (LGPD). |
-| Migração de dados antigos com bio/region | Manutenção | Campos não são mais lidos. Próxima janela de manutenção pode rodar script que limpa esses campos dos docs existentes. |
