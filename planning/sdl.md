@@ -15,7 +15,7 @@
 | 1 | **Autenticação** | Login com e-mail/senha e Google Sign-In via Firebase Auth. Cadastro com criação de perfil no Firestore. Recuperação de senha por e-mail. Verificação de e-mail obrigatória. |
 | 2 | **Autorização** | Controle de acesso por `role` (user/admin) em `users/{uid}.role`. Rotas protegidas via `GoRouter.redirect`. Custom Claims via Cloud Function `setAdminClaim`. |
 | 3 | **Auditoria** | Coleção `audit_logs` imutável (create only, no update/delete). Cloud Function `logAuditEvent` com enriquecimento de IP e UID. Batch writes para atomicidade. |
-| 4 | **CRUD Usuário** | Criação de perfil em `users/{uid}`. Edição de nome, bio e região. Desativação de conta. Exclusão completa com anonimização (LGPD). Exportação de dados pessoais (JSON). |
+| 4 | **CRUD Usuário** | Criação de perfil em `users/{uid}`. Edição de nome. Ciclo de vida da conta (active/suspended/banned/deleted) com decisões alinhadas à LGPD (ver 1.4). Exportação de dados pessoais (JSON). |
 | 5 | **Denúncias** | Criação com título, descrição, categoria, endereço (ViaCEP), geocodificação (Nominatim), upload de imagens (Supabase Storage), opção anônima. Listagem com filtros e paginação. Detalhes com galeria, mapa e comentários. |
 | 6 | **Comentários** | Subcoleção `reports/{id}/comments` com StreamBuilder (tempo real). Validação 5-500 chars. Filtro de palavras ofensivas. |
 | 7 | **Notificações** | Firebase Cloud Messaging com token salvo de forma segura (`flutter_secure_storage`). Foreground via `flutter_local_notifications`. |
@@ -45,11 +45,16 @@
 #### 1.2.5 Portabilidade
 - Flutter para Android (minSdk 23) e iOS. Design responsivo.
 
-#### 1.2.6 Usabilidade
-- Identidade visual consistente (`AppTheme`). `Semantics` e `semanticLabel` para acessibilidade.
+#### 1.2.6 Usabilidade & Acessibilidade
+- Identidade visual consistente (`AppTheme`).
+- `Semantics` e `semanticLabel` em ícones e imagens (compatível com TalkBack/VoiceOver).
+- `MediaQuery.textScaler` respeita as preferências de tamanho de fonte do sistema (clamp 0.85x – 2.0x) — é o equivalente recomendado pelo Material Design ao "zoom" do navegador. O usuário aumenta o texto em Configurações → Tela → Tamanho da fonte e o app inteiro escala junto.
+- Pinch-to-zoom disponível **no conteúdo das imagens** (`InteractiveViewer` na visualização fullscreen). Pinch-to-zoom sobre toda a UI não é suportado pela plataforma e o Material Design não recomenda — a escala de texto cobre esse caso.
+- Pull-to-refresh em todas as listagens.
+- VLibras (intérprete Libras): hoje só existe como widget web/extensão; **não há SDK Flutter oficial**. Alternativas viáveis para futuro: Hand Talk (SDK Android/iOS pago) ou link externo para vlibras.gov.br quando o usuário tocar em um botão "Libras". Documentado como ROADMAP — não implementado nesta versão.
 
 #### 1.2.7 Conformidade
-- **LGPD:** Denúncia anônima, exportação de dados pessoais (JSON), exclusão de conta com anonimização de comentários, política de privacidade (`assets/legal/politica_privacidade.md`), termos de uso (`assets/legal/termos_de_uso.md`), consentimento no registro.
+- **LGPD:** Denúncia anônima (com índice privado `users/{uid}/meusReports` para que o autor consiga ver as próprias mesmo quando anônimas publicamente), exportação de dados pessoais (JSON), exclusão de conta com anonimização (ver matriz em 1.4), política de privacidade (`assets/legal/politica_privacidade.md`), termos de uso (`assets/legal/termos_de_uso.md`), consentimento explícito no registro (checkbox + links clicáveis), minimização de dados (campos `bio` e `region` removidos por não serem necessários ao propósito do app — princípio da necessidade, art. 6º, III).
 
 #### 1.2.8 Interoperabilidade
 - APIs: Firebase (Auth, Firestore, FCM, Crashlytics, Analytics, App Check), Supabase Storage, ViaCEP, Nominatim/OpenStreetMap. Formato JSON.
@@ -67,8 +72,25 @@
 
 | Âmbito | Norma | Implementação |
 |--------|-------|---------------|
-| Nacional | **LGPD** | Denúncia anônima, exportação de dados, exclusão de conta, política de privacidade, consentimento |
+| Nacional | **LGPD** | Denúncia anônima, exportação de dados, exclusão de conta, política de privacidade, consentimento, minimização |
 | Internacional | **GDPR** | Mesmas proteções da LGPD; consentimento explícito no registro |
+
+#### 1.4.1 Matriz do Ciclo de Vida da Conta (LGPD)
+
+A regra de negócio diferencia três cenários distintos que os testadores frequentemente confundem. Cada um tem efeitos jurídicos próprios — definidos abaixo com base nos arts. 7º, 16 e 18 da LGPD.
+
+| Cenário | Quem dispara | `status` no Firestore | Login | Dados pessoais | Denúncias e comentários | Reversível? |
+|---------|--------------|----------------------|-------|----------------|--------------------------|-------------|
+| **Ativo** | – | `active` | sim | mantidos | mantidos | – |
+| **Desativação voluntária** (o usuário toca em "Desativar conta") | Usuário | `suspended` | bloqueado, mas com prompt "Reativar agora?" no login | mantidos | mantidos | Sim — 1 toque na própria tela de login (`AuthProvider.reactivateSelf`) |
+| **Banimento administrativo** (admin → "Banir usuário") | Admin | `banned` + `bannedAt` + `bannedBy` + `bannedReason` | **bloqueado** com mensagem fixa | mantidos | mantidos | Sim — apenas admin pode "Desbanir" |
+| **Exclusão (LGPD art. 18, VI)** (usuário → "Excluir conta") | Usuário | `deleted` + `deletedAt` | **bloqueado permanentemente** | anonimizados (`displayName=Usuário removido`, `email=''`, `photoURL=''`) | denúncias viram anônimas, comentários atribuídos a "Usuário removido" — mantidos por interesse público (art. 7º, IX) | **Não** |
+
+**Decisões técnicas relevantes:**
+- A regra `users/{uid}` Firestore **proíbe `delete`** (`allow delete: if false`) para evitar reuso de UID e quebrar referências históricas. Foi exatamente isso que causava o `permission-denied` reportado pelos testadores quando tentavam excluir a conta. A exclusão "real" no Firebase Auth ocorre depois do batch update (anonimização), via `currentUser.delete()`.
+- Para banidos/excluídos, o `AuthProvider` faz `signOut` imediato e expõe `blockedReason` para a tela de login mostrar um banner explicativo.
+- Para suspensos, o `AuthProvider` mantém o usuário em "limbo" autenticado (`_user` setado, `isLoggedIn=false` porque o getter exige `status==active`) — isso é o que permite o write de reativação respeitar a regra `isOwner(uid)`.
+- Toda transição administrativa (`ban_user`/`unban_user`/`hide_report`/`unhide_report`/`status_change`) gera linha imutável em `auditLogs` com motivo opcional (campo `reason`/`comment`).
 
 ### 1.5 Identificação de Riscos
 
@@ -76,12 +98,15 @@
 |---|-------|-------|---------|-----------|
 | 1 | Acesso não autorizado ao admin | Média | Alto | Firestore Rules `isAdmin()` + GoRouter redirect + Custom Claims |
 | 2 | Upload de arquivos maliciosos | Baixa | Médio | Validação tipo (jpg/png/webp) + tamanho (5MB) + whitelist de URLs |
-| 3 | Exposição de dados pessoais | Média | Alto | `isAnonymous` flag + `userId` forçado a null + Firestore Rules |
+| 3 | Exposição de dados pessoais | Média | Alto | `isAnonymous` flag + `userId` forçado a null + Firestore Rules + minimização (bio/region removidos) |
 | 4 | Spam de denúncias/comentários | Média | Médio | Rate limiting (5/h denúncias, 10/h comentários) + blocked words + debounce |
 | 5 | Injeção de HTML/script | Média | Alto | `InputSanitizer.sanitize()` + Firestore Rules com validação de tipos/tamanhos |
 | 6 | Bypass de validação client-side | Alta | Alto | Firestore Rules versionadas (`firestore.rules`) com validação server-side |
 | 7 | Abuso por bots | Média | Médio | Firebase App Check (Play Integrity / App Attest) |
 | 8 | Elevação de privilégio | Média | Alto | Custom Claims via Cloud Function + Firestore Rules `request.auth.token.admin` |
+| 9 | Usuário banido reentra no app | Baixa | Médio | `AuthProvider` lê `status` em todo login; banidos/excluídos sofrem `signOut` automático + banner explicativo |
+| 10 | Reuso de UID após exclusão | Baixa | Alto | `users/{uid}` doc é mantido anonimizado com `status=deleted`; rule proíbe `delete` físico |
+| 11 | Manipulação de score pelo dono | Baixa | Baixo | Score só muda via `ReportService` e `AdminService` (server-side); regra Firestore restringe write em campos sensíveis |
 
 ### 1.6 Superfícies de Ataque
 
@@ -89,7 +114,7 @@
 |---|-----------|---------|----------------------|
 | 1 | Formulário de denúncia | `title`, `description`, `address` | `InputSanitizer.sanitize` + blocked words + `maxLength` (100/2000/200) + Firestore Rules |
 | 2 | Comentários | `message` | Sanitização + blocked words + min 5 / max 500 + rate limit 10/h + email verified |
-| 3 | Edição de perfil | `displayName`, `bio`, `region` | Sanitização + `validateName` + `maxLength` 60/200 |
+| 3 | Edição de perfil | `displayName` | Sanitização + `validateName` + `maxLength` 60 (campos bio/region removidos) |
 | 4 | Registro | `displayName`, `email`, `password` | `validateName` + `validateEmail` (RFC 5322) + `sendEmailVerification()` |
 | 5 | Upload de imagens | Arquivo binário | Tipo (jpg/png/webp) + tamanho (5MB) + `validateImageUrl` (whitelist) |
 | 6 | Busca por CEP | `cep` | Regex `^\d{5}-?\d{3}$` + `maxLength: 9` |
@@ -117,6 +142,17 @@
 | `canPerform(key, maxPerHour)` | Limite de ações por hora via SharedPreferences |
 | `Debouncer(duration)` | Atrasa execução até input parar (400ms default) |
 
+**`ScrollToTop`** (`lib/utils/scroll_to_top.dart`) — referência global ao `ScrollController` do `BaseLayout` que permite os links do footer rolarem para o topo após navegar. Evita comportamento confuso em que o usuário "clica para ir à home" e cai no meio da nova página por causa do scroll preservado.
+
+**`FullscreenImage`** (`lib/widgets/common/image_viewer.dart`) — diálogo full-screen com `InteractiveViewer` (pinch-to-zoom até 5x), `Hero` animado a partir da thumbnail, fundo escuro, botão de fechar. Usado em `_ImageGallery` da tela de detalhes.
+
+**Ciclo de conta** (`lib/models/app_user.dart`, `lib/providers/auth_provider.dart`):
+- `UserStatus` constantes: `active` / `suspended` / `banned` / `deleted`
+- `AuthProvider` expõe `blockedReason`, `suspendedUid`, `clearBlockedReason()`, `reactivateSelf()`
+- `isLoggedIn` e `isAdmin` só são verdadeiros quando `status == active`, então rotas protegidas/admin automaticamente se ajustam
+- `PrivacyService.deleteAccount` anonimiza + marca `status=deleted` em vez de tentar `delete` físico (que era proibido pela rule)
+- `AdminService.banUser`/`unbanUser` usam batch write com `auditLogs`
+
 ---
 
 ## Fase 2 — Design
@@ -139,21 +175,22 @@ Usuário → Flutter App → Firebase Auth (autenticação + email verification)
 
 | Coleção | Leitura | Escrita |
 |---------|---------|---------|
-| `reports` | Pública | Auth (criar) + validação server-side; Autor/Admin (editar) |
-| `reports/{id}/comments` | Pública | Auth (criar) + `authorId == uid` + 5-500 chars; Autor/Admin (editar) |
-| `users` | Pública | Próprio usuário ou Admin |
+| `reports` | Pública | Auth (criar) + validação server-side; Autor edita **exceto** `isHidden`; Admin pode tudo |
+| `reports/{id}/comments` | Pública | Auth (criar) + `authorId == uid` + 5-500 chars; Autor edita/apaga próprio; Admin apaga qualquer um |
+| `users` | Pública | Próprio usuário ou Admin. `delete` proibido — exclusão é anonimização |
 | `users/{uid}/denunciasSalvas` | Próprio | Próprio |
+| `users/{uid}/meusReports` | Próprio | Próprio. Índice privado das denúncias do usuário (incl. anônimas) |
 | `audit_logs` | Admin | Auth (criar); **Imutável** (update/delete: false) |
-| `auditLogs` | Admin | Auth (criar); **Imutável** |
+| `auditLogs` | Admin | Auth (criar); **Imutável**. Atualmente recebe `status_change`, `hide_report`/`unhide_report`, `ban_user`/`unban_user` |
 
 ### 2.2 STRIDE — Aplicação ao Cidade Integra
 
 | Ameaça | Cenário | Mitigação |
 |--------|---------|-----------|
-| **Spoofing** | Conta falsa para denúncias fraudulentas | Firebase Auth + verificação de e-mail + bloqueio de escrita sem verificação |
-| **Tampering** | Adulteração de denúncia após envio | Firestore Rules: apenas autor/admin editam. `updatedAt` server timestamp |
-| **Repudiation** | Negação de autoria de denúncia/comentário | `audit_logs` imutável com timestamp, UID, IP (Cloud Function) |
-| **Information Disclosure** | Exposição de dados do denunciante | `isAnonymous` flag + `userId` forçado a null + export/exclusão de dados (LGPD) |
+| **Spoofing** | Conta falsa para denúncias fraudulentas | Firebase Auth + verificação de e-mail + bloqueio de escrita sem verificação. Conta banida sofre `signOut` no próximo `_onAuthChanged` |
+| **Tampering** | Adulteração de denúncia após envio | Firestore Rules: apenas autor/admin editam. `updatedAt` server timestamp. Dono não consegue flipar `isHidden` (só admin) |
+| **Repudiation** | Negação de autoria de denúncia/comentário | `audit_logs` imutável com timestamp, UID, IP (Cloud Function). Ban/unban/hide/unhide gravam motivo em `reason` |
+| **Information Disclosure** | Exposição de dados do denunciante | `isAnonymous` flag + `userId` forçado a null nos docs públicos + índice privado `users/{uid}/meusReports` para autor ver as próprias + export/exclusão de dados (LGPD) |
 | **Denial of Service** | Spam em massa | Rate limiting (5/h) + App Check + blocked words + debounce |
 | **Elevation of Privilege** | Acesso admin indevido | Custom Claims via Cloud Function + Firestore Rules `request.auth.token.admin` |
 
@@ -214,10 +251,10 @@ lib/
 
 | Tipo | Quantidade | Cobertura |
 |------|-----------|-----------|
-| Testes unitários | 35 | `Report`, `AppUser`, `InputSanitizer`, `BadgeRules`, `ReportLocation` |
+| Testes unitários | 35 | `Report`, `AppUser` (incluindo `isSuspended`/`isBanned`), `InputSanitizer`, `BadgeRules`, `ReportLocation` |
 | Testes de widget | 13 | `StatusBadge`, `CardDenuncia` |
 | Testes E2E | Configurado | `integration_test/app_test.dart` com `IntegrationTestWidgetsFlutterBinding` |
-| Análise estática | CI | `flutter analyze --fatal-infos --fatal-warnings` |
+| Análise estática | local | `flutter analyze` (CI foi removido após instabilidade; ver Lições Aprendidas no plano de incidentes) |
 | **Total** | **48** | |
 
 ### 4.2 Checklist de Pentest (OWASP MASVS)
@@ -263,11 +300,26 @@ Documento completo em [`plano-resposta-incidentes.md`](./plano-resposta-incident
 | Item | Status |
 |------|--------|
 | Requisitos de segurança (1.3) cumpridos | ✅ |
-| Requisitos de privacidade (1.4) cumpridos | ✅ |
+| Requisitos de privacidade (1.4) cumpridos, incluindo matriz LGPD do ciclo de conta | ✅ |
 | Mitigações STRIDE implementadas e testadas | ✅ |
 | Plano de resposta a incidentes documentado | ✅ |
-| CI/CD configurado com análise estática | ✅ |
 | 48 testes automatizados passando | ✅ |
 | Firestore Rules versionadas e deployadas | ✅ |
-| Política de privacidade e termos de uso | ✅ |
+| Política de privacidade e termos de uso (renderizados como markdown) | ✅ |
 | Pentest checklist OWASP MASVS verificado | ✅ |
+| Soft-delete administrativo de denúncias com auditoria | ✅ |
+| Ciclo completo de conta (suspended/banned/deleted) com login bloqueado | ✅ |
+
+---
+
+## Roadmap pós-v1
+
+Itens que surgiram em testes mas foram registrados como roadmap para não atrasar o release acadêmico.
+
+| Item | Tipo | Por que ficou fora desta versão |
+|------|------|----------------------------------|
+| VLibras embutido | Acessibilidade | Não há SDK Flutter oficial. Alternativas (Hand Talk SDK) exigem licença comercial. Solução acessível mas funcional: link externo para vlibras.gov.br. |
+| Validação rígida de endereço (CEP + número obrigatórios) | UX | Dificulta o uso por usuários em áreas sem CEP catalogado. Optamos por validação suave: avisar quando o geocoding falha mas permitir prosseguir. |
+| Pinch-to-zoom em toda a UI | Acessibilidade | Não é suportado pelo Material Design — quebraria gestos do app. Cobertura adequada já existe via `textScaler` (até 2x) e `InteractiveViewer` em imagens. |
+| Reativação automática ao tentar logar suspenso | UX | Hoje exigimos toque explícito em "Reativar" — registro de consentimento (LGPD). |
+| Migração de dados antigos com bio/region | Manutenção | Campos não são mais lidos. Próxima janela de manutenção pode rodar script que limpa esses campos dos docs existentes. |

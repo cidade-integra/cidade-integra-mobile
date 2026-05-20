@@ -39,11 +39,27 @@ Isso gera automaticamente o `lib/firebase_options.dart` e os arquivos de configu
 keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android
 ```
 
-### 4. Rodar o app
+### 4. Configurar segredos (Supabase + Google)
+
+Os segredos vivem em `cidade_integra/env/secrets.json` (no `.gitignore`) e são injetados em tempo de build via `--dart-define-from-file`. Para criar o arquivo:
 
 ```bash
-flutter run
+cd cidade_integra
+./scripts/setup_env.sh
 ```
+
+O script vai pedir interativamente:
+- `SUPABASE_URL` e `SUPABASE_ANON_KEY` — Supabase Dashboard → Project Settings → API
+- `GOOGLE_SERVER_CLIENT_ID` — Google Cloud Console → Credentials → OAuth 2.0 Client IDs (Web)
+
+### 5. Rodar o app
+
+```bash
+# Sempre via script wrapper para garantir que os segredos são injetados
+./scripts/run.sh
+```
+
+Se executar direto `flutter run` sem segredos, o app exibe uma tela de configuração explicando como corrigir (em vez de crashar). Isso é intencional para que estudantes/colaboradores que clonem o repo entendam imediatamente o que falta.
 
 ## Segurança — o que NÃO commitar
 
@@ -63,16 +79,21 @@ Os seguintes arquivos contêm chaves e tokens sensíveis. Verifique que estão n
 
 ```
 lib/
-├── main.dart              # Ponto de entrada + inicialização
-├── firebase_options.dart   # Config Firebase (gerado)
-├── models/                 # Entidades (Report, AppUser, Comment)
-├── services/               # Firestore, Supabase, APIs externas
-├── providers/              # AuthProvider (estado global)
-├── screens/                # Telas do app
-├── widgets/                # Componentes reutilizáveis
-├── routes/                 # GoRouter + guards de autenticação
-├── utils/                  # Tema, erros, badges
+├── main.dart              # Ponto de entrada + tela de erro de config
+├── firebase_options.dart   # Config Firebase (gerado, .gitignored)
+├── models/                 # Entidades (Report, AppUser, Comment + UserStatus)
+├── services/               # Firestore, Supabase, APIs externas, Privacy
+├── providers/              # AuthProvider (estado global + bloqueio LGPD)
+├── screens/                # 18 telas (incl. config_error, legal, admin)
+├── widgets/                # Componentes (layout, denuncias, common/image_viewer)
+├── routes/                 # GoRouter + guards
+├── utils/                  # Tema, InputSanitizer, RateLimiter, ScrollToTop
+├── config/                 # Env (segredos via --dart-define)
 └── data/                   # Dados estáticos (categorias, FAQ, equipe)
+
+assets/legal/               # Termos de Uso e Política de Privacidade (.md)
+firestore.rules             # Regras versionadas + validação server-side
+functions/                  # Cloud Functions (setAdminClaim, logAuditEvent)
 ```
 
 ## Tecnologias
@@ -90,6 +111,16 @@ lib/
 
 ## Documentação
 
-- [`planning/sdl.md`](planning/sdl.md) — **SDL (Security Development Lifecycle)** — documento único de segurança
+- [`planning/sdl.md`](planning/sdl.md) — **SDL (Security Development Lifecycle)** — documento único de segurança, inclui matriz LGPD do ciclo de conta (active/suspended/banned/deleted) e roadmap pós-v1
 - [`planning/plano-resposta-incidentes.md`](planning/plano-resposta-incidentes.md) — Plano de Resposta a Incidentes
 - [`planning/planejamento-tasks.md`](planning/planejamento-tasks.md) — Plano de desenvolvimento (10 milestones, ~40 tasks)
+
+## FAQ rápida para testadores
+
+| Comportamento | Por que é assim |
+|---------------|-----------------|
+| App pede permissão para abrir LinkedIn/GitHub no browser externo | É intencional (`LaunchMode.externalApplication`) — similar ao `target="_blank"` da web |
+| Pinch-to-zoom não funciona em qualquer tela | Plataforma não suporta. Use o tamanho de fonte do sistema (Configurações → Tela) para escalar tudo até 2x. Imagens permitem pinch-to-zoom quando abertas em fullscreen |
+| Botão voltar do Android volta uma tela em vez de fechar o app | Implementado via `PopScope` no `BaseLayout`. Só fecha o app quando você está em `/` |
+| Conta desativada consegue logar de novo | É o caminho de **reativação voluntária**: o login mostra um banner com botão "Reativar". Se quiser bloquear definitivamente, um admin precisa **banir** a conta |
+| Excluir conta dá erro de permissão em versões antigas | Foi corrigido — agora anonimiza o doc em vez de tentar deletar |
