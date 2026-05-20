@@ -298,6 +298,7 @@ class _CommentSectionState extends State<CommentSection> {
                   }
 
                   final currentUid = auth.user?.uid;
+                  final isAdmin = auth.isAdmin;
                   return Column(
                     children: comments.map((c) {
                       final isOwner =
@@ -305,8 +306,11 @@ class _CommentSectionState extends State<CommentSection> {
                       return _CommentCard(
                         comment: c,
                         isOwner: isOwner,
+                        isAdmin: isAdmin && !isOwner,
                         onEdit: isOwner ? () => _editComment(c) : null,
-                        onDelete: isOwner ? () => _deleteComment(c) : null,
+                        onDelete: (isOwner || isAdmin)
+                            ? () => _deleteComment(c)
+                            : null,
                       );
                     }).toList(),
                   );
@@ -323,12 +327,14 @@ class _CommentSectionState extends State<CommentSection> {
 class _CommentCard extends StatelessWidget {
   final Comment comment;
   final bool isOwner;
+  final bool isAdmin;
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
 
   const _CommentCard({
     required this.comment,
     this.isOwner = false,
+    this.isAdmin = false,
     this.onEdit,
     this.onDelete,
   });
@@ -426,7 +432,7 @@ class _CommentCard extends StatelessWidget {
                   ],
                 ),
               ),
-              if (isOwner)
+              if (isOwner || isAdmin)
                 PopupMenuButton<String>(
                   icon: Icon(
                     Icons.more_vert,
@@ -437,24 +443,27 @@ class _CommentCard extends StatelessWidget {
                     if (v == 'edit') onEdit?.call();
                     if (v == 'delete') onDelete?.call();
                   },
-                  itemBuilder: (_) => const [
-                    PopupMenuItem(
-                      value: 'edit',
-                      child: Row(
-                        children: [
-                          Icon(Icons.edit_outlined, size: 16),
-                          SizedBox(width: 8),
-                          Text('Editar'),
-                        ],
+                  itemBuilder: (_) => [
+                    if (isOwner)
+                      const PopupMenuItem(
+                        value: 'edit',
+                        child: Row(
+                          children: [
+                            Icon(Icons.edit_outlined, size: 16),
+                            SizedBox(width: 8),
+                            Text('Editar'),
+                          ],
+                        ),
                       ),
-                    ),
                     PopupMenuItem(
                       value: 'delete',
                       child: Row(
                         children: [
-                          Icon(Icons.delete_outline, size: 16),
-                          SizedBox(width: 8),
-                          Text('Apagar'),
+                          const Icon(Icons.delete_outline, size: 16),
+                          const SizedBox(width: 8),
+                          Text(isAdmin && !isOwner
+                              ? 'Apagar (admin)'
+                              : 'Apagar'),
                         ],
                       ),
                     ),

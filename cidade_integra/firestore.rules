@@ -77,6 +77,12 @@ service cloud.firestore {
       match /denunciasSalvas/{denunciaId} {
         allow read, write: if isOwner(userId);
       }
+
+      // ── índice privado de denúncias criadas pelo usuário
+      //     (inclui as anônimas, para exibição em "Minhas Denúncias")
+      match /meusReports/{reportId} {
+        allow read, write: if isOwner(userId);
+      }
     }
 
     // ── audit logs ───────────────────────────────────────────

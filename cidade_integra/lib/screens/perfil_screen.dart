@@ -137,39 +137,6 @@ class _ProfileContent extends StatelessWidget {
                   color: Colors.white.withValues(alpha: 0.7),
                 ),
               ),
-              if (user.bio.isNotEmpty) ...[
-                const SizedBox(height: 10),
-                Text(
-                  user.bio,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.white.withValues(alpha: 0.8),
-                    height: 1.3,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-              if (user.region.isNotEmpty) ...[
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.location_on_outlined,
-                      size: 14,
-                      color: Colors.white.withValues(alpha: 0.7),
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      user.region,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.white.withValues(alpha: 0.7),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
             ],
           ),
         ),

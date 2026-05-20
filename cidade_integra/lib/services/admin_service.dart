@@ -53,8 +53,54 @@ class AdminService {
     await _users.doc(uid).update({'role': newRole});
   }
 
-  Future<void> updateUserStatus(String uid, String newStatus) async {
-    await _users.doc(uid).update({'status': newStatus});
+  /// Admin bane um usuário: status = banned, bloqueia login.
+  Future<void> banUser({
+    required String uid,
+    required String adminUid,
+    required String adminName,
+    String? reason,
+  }) async {
+    final batch = FirebaseFirestore.instance.batch();
+    batch.update(_users.doc(uid), {
+      'status': 'banned',
+      'bannedAt': FieldValue.serverTimestamp(),
+      'bannedBy': adminUid,
+      'bannedReason': reason,
+    });
+    final auditRef = FirebaseFirestore.instance.collection('auditLogs').doc();
+    batch.set(auditRef, {
+      'timestamp': FieldValue.serverTimestamp(),
+      'userId': adminUid,
+      'userDisplayName': adminName,
+      'targetUserId': uid,
+      'action': 'ban_user',
+      'reason': reason,
+    });
+    await batch.commit();
+  }
+
+  /// Admin desbloqueia um usuário banido (status volta a active).
+  Future<void> unbanUser({
+    required String uid,
+    required String adminUid,
+    required String adminName,
+  }) async {
+    final batch = FirebaseFirestore.instance.batch();
+    batch.update(_users.doc(uid), {
+      'status': 'active',
+      'bannedAt': null,
+      'bannedBy': null,
+      'bannedReason': null,
+    });
+    final auditRef = FirebaseFirestore.instance.collection('auditLogs').doc();
+    batch.set(auditRef, {
+      'timestamp': FieldValue.serverTimestamp(),
+      'userId': adminUid,
+      'userDisplayName': adminName,
+      'targetUserId': uid,
+      'action': 'unban_user',
+    });
+    await batch.commit();
   }
 
   Future<void> updateReportStatusWithAudit({
@@ -93,6 +139,12 @@ class AdminService {
     required String adminName,
     String? reason,
   }) async {
+    final reportSnap = await _reports.doc(reportId).get();
+    final reportData = reportSnap.data();
+    final ownerId = reportData?['userId'] as String?;
+    final wasResolved = reportData?['status'] == 'resolved';
+    final alreadyHidden = reportData?['isHidden'] == true;
+
     final batch = FirebaseFirestore.instance.batch();
 
     batch.update(_reports.doc(reportId), {
@@ -102,6 +154,14 @@ class AdminService {
       'hiddenReason': reason,
       'updatedAt': FieldValue.serverTimestamp(),
     });
+
+    if (!alreadyHidden && ownerId != null) {
+      final scoreDelta = -10 + (wasResolved ? -20 : 0);
+      batch.update(_users.doc(ownerId), {
+        'reportCount': FieldValue.increment(-1),
+        'score': FieldValue.increment(scoreDelta),
+      });
+    }
 
     final auditRef = FirebaseFirestore.instance.collection('auditLogs').doc();
     batch.set(auditRef, {
@@ -120,7 +180,14 @@ class AdminService {
     required String reportId,
     required String adminUid,
     required String adminName,
+    String? reason,
   }) async {
+    final reportSnap = await _reports.doc(reportId).get();
+    final reportData = reportSnap.data();
+    final ownerId = reportData?['userId'] as String?;
+    final wasResolved = reportData?['status'] == 'resolved';
+    final wasHidden = reportData?['isHidden'] == true;
+
     final batch = FirebaseFirestore.instance.batch();
 
     batch.update(_reports.doc(reportId), {
@@ -131,6 +198,14 @@ class AdminService {
       'updatedAt': FieldValue.serverTimestamp(),
     });
 
+    if (wasHidden && ownerId != null) {
+      final scoreDelta = 10 + (wasResolved ? 20 : 0);
+      batch.update(_users.doc(ownerId), {
+        'reportCount': FieldValue.increment(1),
+        'score': FieldValue.increment(scoreDelta),
+      });
+    }
+
     final auditRef = FirebaseFirestore.instance.collection('auditLogs').doc();
     batch.set(auditRef, {
       'timestamp': FieldValue.serverTimestamp(),
@@ -138,6 +213,7 @@ class AdminService {
       'userDisplayName': adminName,
       'reportId': reportId,
       'action': 'unhide_report',
+      'reason': reason,
     });
 
     await batch.commit();

@@ -18,21 +18,27 @@ class UserService {
   Future<void> updateProfile({
     required String uid,
     required String displayName,
-    String? bio,
-    String? region,
   }) async {
-    await _collection.doc(uid).update({
-      'displayName': displayName,
-      if (bio != null) 'bio': bio,
-      if (region != null) 'region': region,
-    });
-
+    await _collection.doc(uid).update({'displayName': displayName});
     await FirebaseAuth.instance.currentUser?.updateDisplayName(displayName);
   }
 
-  Future<void> deactivateAccount(String uid) async {
-    await _collection.doc(uid).update({'status': 'inactive'});
+  /// Suspende a própria conta (LGPD: pausa voluntária). Pode ser revertida
+  /// pelo próprio usuário ao logar de novo.
+  Future<void> suspendOwnAccount(String uid) async {
+    await _collection.doc(uid).update({
+      'status': UserStatus.suspended,
+      'suspendedAt': FieldValue.serverTimestamp(),
+    });
     await FirebaseAuth.instance.signOut();
+  }
+
+  /// Reativa uma conta suspensa pelo próprio titular.
+  Future<void> reactivateOwnAccount(String uid) async {
+    await _collection.doc(uid).update({
+      'status': UserStatus.active,
+      'suspendedAt': null,
+    });
   }
 
   Future<int> getTotalUsers() async {

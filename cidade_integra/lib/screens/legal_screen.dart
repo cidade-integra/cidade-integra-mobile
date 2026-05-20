@@ -53,7 +53,12 @@ class _LegalScreenState extends State<LegalScreen> {
           ? const Center(child: CircularProgressIndicator())
           : Markdown(
               data: _content!,
-              padding: const EdgeInsets.all(20),
+              padding: EdgeInsets.fromLTRB(
+                20,
+                20,
+                20,
+                MediaQuery.of(context).padding.bottom + 64,
+              ),
               onTapLink: (text, href, title) async {
                 if (href == null) return;
                 final uri = Uri.tryParse(href);

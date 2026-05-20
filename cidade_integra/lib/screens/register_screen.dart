@@ -68,9 +68,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             'score': 0,
             'reportCount': 0,
             'lastLoginAt': DateTime.now().toIso8601String(),
-            'region': '',
             'verified': false,
-            'bio': '',
             'status': 'active',
           });
 

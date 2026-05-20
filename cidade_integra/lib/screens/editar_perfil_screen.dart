@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -46,23 +47,17 @@ class _EditForm extends StatefulWidget {
 class _EditFormState extends State<_EditForm> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _nomeController;
-  late final TextEditingController _bioController;
-  late final TextEditingController _regiaoController;
   bool _loading = false;
 
   @override
   void initState() {
     super.initState();
     _nomeController = TextEditingController(text: widget.user.displayName);
-    _bioController = TextEditingController(text: widget.user.bio);
-    _regiaoController = TextEditingController(text: widget.user.region);
   }
 
   @override
   void dispose() {
     _nomeController.dispose();
-    _bioController.dispose();
-    _regiaoController.dispose();
     super.dispose();
   }
 
@@ -70,8 +65,6 @@ class _EditFormState extends State<_EditForm> {
     if (!_formKey.currentState!.validate()) return;
 
     final nome = InputSanitizer.sanitize(_nomeController.text);
-    final bio = InputSanitizer.sanitize(_bioController.text);
-    final regiao = InputSanitizer.sanitize(_regiaoController.text);
 
     setState(() => _loading = true);
 
@@ -79,8 +72,6 @@ class _EditFormState extends State<_EditForm> {
       await UserService().updateProfile(
         uid: widget.user.uid,
         displayName: nome,
-        bio: bio,
-        region: regiao,
       );
 
       if (mounted) {
@@ -107,8 +98,9 @@ class _EditFormState extends State<_EditForm> {
           (ctx) => AlertDialog(
             title: const Text('Desativar Conta'),
             content: const Text(
-              'Tem certeza que deseja desativar sua conta? '
-              'Você poderá reativá-la entrando em contato com o suporte.',
+              'Sua conta ficará suspensa e você sairá do app. '
+              'Para reativá-la basta fazer login novamente — '
+              'você receberá um aviso e poderá restaurar a conta com 1 toque.',
             ),
             actions: [
               TextButton(
@@ -118,7 +110,7 @@ class _EditFormState extends State<_EditForm> {
               ElevatedButton(
                 onPressed: () async {
                   Navigator.pop(ctx);
-                  await UserService().deactivateAccount(widget.user.uid);
+                  await UserService().suspendOwnAccount(widget.user.uid);
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
@@ -145,9 +137,12 @@ class _EditFormState extends State<_EditForm> {
           (ctx) => AlertDialog(
             title: const Text('Excluir Conta'),
             content: const Text(
-              'Esta ação é IRREVERSÍVEL. Todos os seus dados pessoais serão removidos. '
+              'Esta ação é IRREVERSÍVEL. '
+              'Seu nome, e-mail e foto serão removidos. '
               'Suas denúncias permanecerão anonimizadas para fins de interesse público. '
-              'Seus comentários serão atribuídos a "Usuário removido".',
+              'Seus comentários serão atribuídos a "Usuário removido".\n\n'
+              'Por segurança, o Firebase pode pedir que você faça login '
+              'novamente antes de concluir.',
             ),
             actions: [
               TextButton(
@@ -164,6 +159,16 @@ class _EditFormState extends State<_EditForm> {
                         const SnackBar(content: Text('Conta excluída.')),
                       );
                       context.go('/');
+                    }
+                  } on FirebaseAuthException catch (e) {
+                    if (mounted) {
+                      final msg = e.code == 'requires-recent-login'
+                          ? 'Por segurança, faça login novamente e tente '
+                              'excluir em seguida.'
+                          : 'Erro ao excluir: ${e.message ?? e.code}';
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(msg)),
+                      );
                     }
                   } catch (e) {
                     if (mounted) {
@@ -228,38 +233,13 @@ class _EditFormState extends State<_EditForm> {
               children: [
                 TextFormField(
                   controller: _nomeController,
-                  textInputAction: TextInputAction.next,
+                  textInputAction: TextInputAction.done,
                   decoration: const InputDecoration(
                     labelText: 'Nome de exibição *',
                     prefixIcon: Icon(Icons.person_outline),
                   ),
                   maxLength: 60,
                   validator: (v) => InputSanitizer.validateName(v),
-                ),
-                const SizedBox(height: 16),
-
-                TextFormField(
-                  controller: _bioController,
-                  maxLines: 3,
-                  maxLength: 200,
-                  textInputAction: TextInputAction.next,
-                  decoration: const InputDecoration(
-                    labelText: 'Bio',
-                    hintText: 'Conte um pouco sobre você...',
-                    prefixIcon: Icon(Icons.info_outline),
-                    alignLabelWithHint: true,
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                TextFormField(
-                  controller: _regiaoController,
-                  textInputAction: TextInputAction.done,
-                  decoration: const InputDecoration(
-                    labelText: 'Região',
-                    hintText: 'Ex: São Paulo - SP',
-                    prefixIcon: Icon(Icons.location_on_outlined),
-                  ),
                 ),
                 const SizedBox(height: 24),
 

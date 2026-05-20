@@ -190,45 +190,66 @@ class _DenunciasScreenState extends State<DenunciasScreen> {
   }
 
   Widget _buildFilters() {
+    final hasStatus = _statusFilter != null;
+    final hasCategory = _categoryFilter != null;
+    final activeCount = (hasStatus ? 1 : 0) + (hasCategory ? 1 : 0);
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            _buildFilterChip(
-              label:
-                  _statusFilter == null
-                      ? 'Status'
-                      : _statusLabel(_statusFilter!),
-              active: _statusFilter != null,
-              onTap: () => _showStatusFilter(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                _buildFilterChip(
+                  label: hasStatus
+                      ? _statusLabel(_statusFilter!)
+                      : 'Status',
+                  active: hasStatus,
+                  onTap: () => _showStatusFilter(),
+                ),
+                const SizedBox(width: 8),
+                _buildFilterChip(
+                  label: hasCategory
+                      ? _categoryLabel(_categoryFilter!)
+                      : 'Categoria',
+                  active: hasCategory,
+                  onTap: () => _showCategoryFilter(),
+                ),
+                if (hasStatus || hasCategory) ...[
+                  const SizedBox(width: 8),
+                  ActionChip(
+                    label: const Text('Limpar filtros'),
+                    avatar: const Icon(Icons.clear, size: 16),
+                    onPressed: () {
+                      setState(() {
+                        _statusFilter = null;
+                        _categoryFilter = null;
+                      });
+                      _resetPage();
+                    },
+                  ),
+                ],
+              ],
             ),
-            const SizedBox(width: 8),
-            _buildFilterChip(
-              label:
-                  _categoryFilter == null
-                      ? 'Categoria'
-                      : _categoryLabel(_categoryFilter!),
-              active: _categoryFilter != null,
-              onTap: () => _showCategoryFilter(),
-            ),
-            if (_statusFilter != null || _categoryFilter != null) ...[
-              const SizedBox(width: 8),
-              ActionChip(
-                label: const Text('Limpar filtros'),
-                avatar: const Icon(Icons.clear, size: 16),
-                onPressed: () {
-                  setState(() {
-                    _statusFilter = null;
-                    _categoryFilter = null;
-                  });
-                  _resetPage();
-                },
+          ),
+          if (activeCount > 0)
+            Padding(
+              padding: const EdgeInsets.only(top: 6, left: 4),
+              child: Text(
+                activeCount == 2
+                    ? 'Aplicando 2 filtros simultaneamente.'
+                    : 'Toque em outro chip para combinar filtros.',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontStyle: FontStyle.italic,
+                  color: AppColors.textoSecundario,
+                ),
               ),
-            ],
-          ],
-        ),
+            ),
+        ],
       ),
     );
   }

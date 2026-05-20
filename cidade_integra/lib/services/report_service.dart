@@ -29,17 +29,27 @@ class ReportService {
     return reports.where((r) => !r.isHidden).toList();
   }
 
+  /// Lista todas as denúncias do usuário — inclusive as anônimas, que
+  /// têm `userId: null` no documento público mas são indexadas em
+  /// `users/{uid}/meusReports` (subcoleção privada).
   Future<List<Report>> getReportsByUser(
     String userId, {
     bool includeHidden = false,
   }) async {
-    final snapshot =
-        await _collection
-            .where('userId', isEqualTo: userId)
-            .orderBy('createdAt', descending: true)
-            .get();
-    final reports =
-        snapshot.docs.map((doc) => Report.fromFirestore(doc)).toList();
+    final users = FirebaseFirestore.instance.collection('users');
+    final indexSnap = await users
+        .doc(userId)
+        .collection('meusReports')
+        .orderBy('createdAt', descending: true)
+        .get();
+    final ids = indexSnap.docs.map((d) => d.id).toList();
+
+    final reports = <Report>[];
+    for (final id in ids) {
+      final doc = await _collection.doc(id).get();
+      if (doc.exists) reports.add(Report.fromFirestore(doc));
+    }
+
     if (includeHidden) return reports;
     return reports.where((r) => !r.isHidden).toList();
   }
@@ -50,7 +60,15 @@ class ReportService {
     return Report.fromFirestore(doc);
   }
 
-  Future<String> createReport(Report report) async {
+  /// Cria uma denúncia. Se [authorUid] for fornecido, a denúncia também
+  /// é indexada em `users/{authorUid}/meusReports/{reportId}` — permite
+  /// que o autor veja a própria denúncia em "Minhas Denúncias" mesmo
+  /// quando foi enviada como anônima (e portanto sem `userId` no doc
+  /// público).
+  Future<String> createReport(
+    Report report, {
+    String? authorUid,
+  }) async {
     final data = report.toFirestore();
     data['createdAt'] = FieldValue.serverTimestamp();
     data['updatedAt'] = FieldValue.serverTimestamp();
@@ -58,15 +76,21 @@ class ReportService {
     data['resolvedAt'] = null;
 
     final docRef = await _collection.add(data);
+    final uid = authorUid ?? report.userId;
 
-    if (report.userId != null) {
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(report.userId)
-          .update({
-            'reportCount': FieldValue.increment(1),
-            'score': FieldValue.increment(10),
-          });
+    if (uid != null) {
+      final users = FirebaseFirestore.instance.collection('users');
+      await users.doc(uid).collection('meusReports').doc(docRef.id).set({
+        'createdAt': FieldValue.serverTimestamp(),
+        'isAnonymous': report.isAnonymous,
+      });
+
+      if (!report.isAnonymous) {
+        await users.doc(uid).update({
+          'reportCount': FieldValue.increment(1),
+          'score': FieldValue.increment(10),
+        });
+      }
     }
 
     return docRef.id;

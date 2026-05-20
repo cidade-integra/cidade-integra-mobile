@@ -33,22 +33,24 @@ void main() {
     });
 
     test('copyWith preserves unchanged fields', () {
-      final updated = baseUser.copyWith(bio: 'Hello');
+      final updated = baseUser.copyWith(score: 99);
       expect(updated.uid, baseUser.uid);
       expect(updated.email, baseUser.email);
       expect(updated.displayName, baseUser.displayName);
-      expect(updated.bio, 'Hello');
+      expect(updated.score, 99);
+      expect(updated.reportCount, baseUser.reportCount);
     });
 
     test('copyWith overrides specified fields', () {
       final updated = baseUser.copyWith(
         displayName: 'New Name',
         score: 100,
-        region: 'SP',
+        status: UserStatus.suspended,
       );
       expect(updated.displayName, 'New Name');
       expect(updated.score, 100);
-      expect(updated.region, 'SP');
+      expect(updated.status, UserStatus.suspended);
+      expect(updated.isSuspended, isTrue);
     });
   });
 }

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../utils/app_theme.dart';
+import '../../utils/scroll_to_top.dart';
 
 class AppFooter extends StatelessWidget {
   const AppFooter({super.key});
@@ -65,14 +67,43 @@ class AppFooter extends StatelessWidget {
             style: TextStyle(color: AppColors.cinza, fontSize: 13, height: 1.5),
           ),
 
-          // --- Divisor + Copyright ---
           const SizedBox(height: 24),
           Divider(color: AppColors.cinza.withValues(alpha: 0.3)),
           const SizedBox(height: 16),
           Center(
-            child: Text(
-              '© $currentYear Cidade Integra. Todos os direitos reservados.',
-              style: TextStyle(color: AppColors.cinza, fontSize: 12),
+            child: RichText(
+              textAlign: TextAlign.center,
+              text: TextSpan(
+                style: TextStyle(color: AppColors.cinza, fontSize: 12),
+                children: [
+                  TextSpan(text: '© $currentYear '),
+                  WidgetSpan(
+                    alignment: PlaceholderAlignment.middle,
+                    child: GestureDetector(
+                      onTap: () async {
+                        final uri = Uri.parse(
+                          'https://github.com/cidade-integra',
+                        );
+                        await launchUrl(
+                          uri,
+                          mode: LaunchMode.externalApplication,
+                        );
+                      },
+                      child: Text(
+                        'Cidade Integra',
+                        style: TextStyle(
+                          color: AppColors.cinza,
+                          fontSize: 12,
+                          decoration: TextDecoration.underline,
+                          decorationColor:
+                              AppColors.cinza.withValues(alpha: 0.5),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const TextSpan(text: '. Todos os direitos reservados.'),
+                ],
+              ),
             ),
           ),
         ],
@@ -90,7 +121,10 @@ class _FooterLink extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => context.go(route),
+      onTap: () {
+        context.go(route);
+        ScrollToTop.trigger();
+      },
       child: Text(
         label,
         style: TextStyle(color: AppColors.cinza, fontSize: 14),

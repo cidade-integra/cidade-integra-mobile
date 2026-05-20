@@ -125,6 +125,35 @@ class _NovaDenunciaScreenState extends State<NovaDenunciaScreen> {
       }
 
       final coords = await GeocodingService().getCoordinates(endereco);
+      if (coords == null) {
+        if (mounted) {
+          final proceed = await showDialog<bool>(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              title: const Text('Endereço não localizado'),
+              content: const Text(
+                'Não conseguimos encontrar este endereço no mapa. '
+                'Verifique se está correto (rua, número, cidade) ou siga '
+                'mesmo assim — a denúncia será criada sem ponto no mapa.',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  child: const Text('Corrigir'),
+                ),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(ctx, true),
+                  child: const Text('Enviar mesmo assim'),
+                ),
+              ],
+            ),
+          );
+          if (proceed != true) {
+            setState(() => _loading = false);
+            return;
+          }
+        }
+      }
 
       final report = Report(
         id: '',
@@ -148,7 +177,7 @@ class _NovaDenunciaScreenState extends State<NovaDenunciaScreen> {
         updatedAt: DateTime.now(),
       );
 
-      await ReportService().createReport(report);
+      await ReportService().createReport(report, authorUid: auth.user!.uid);
       await AnalyticsService.logCreateReport(report.category.name);
 
       if (mounted) {

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../../models/app_user.dart';
+import '../../providers/auth_provider.dart';
 import '../../services/admin_service.dart';
 import '../../services/export_service.dart';
 import '../../utils/rate_limiter.dart';
@@ -111,54 +113,96 @@ class _AdminUsuariosScreenState extends State<AdminUsuariosScreen> {
     );
   }
 
-  void _confirmStatusChange(AppUser user) {
-    final newStatus = user.status == 'active' ? 'inactive' : 'active';
-    showDialog(
+  Future<void> _confirmStatusChange(AppUser user) async {
+    final isBanning = user.status != 'banned';
+    final reasonController = TextEditingController();
+
+    final confirmed = await showDialog<bool>(
       context: context,
-      builder:
-          (ctx) => AlertDialog(
-            title: Text(
-              newStatus == 'inactive'
-                  ? 'Desativar Usuário'
-                  : 'Reativar Usuário',
-            ),
-            content: Text(
-              '${newStatus == "inactive" ? "Desativar" : "Reativar"} '
-              'a conta de "${user.displayName}"?',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text('Cancelar'),
+      builder: (ctx) => AlertDialog(
+        title: Text(isBanning ? 'Banir usuário' : 'Desbanir usuário'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              isBanning
+                  ? '"${user.displayName}" será bloqueado e não poderá '
+                      'fazer login no app.'
+                  : '"${user.displayName}" voltará a poder fazer login.',
+              style: TextStyle(
+                fontSize: 13,
+                color: AppColors.textoSecundario,
               ),
-              ElevatedButton(
-                onPressed: () async {
-                  Navigator.pop(ctx);
-                  await _service.updateUserStatus(user.uid, newStatus);
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          newStatus == 'inactive'
-                              ? 'Usuário desativado.'
-                              : 'Usuário reativado.',
-                        ),
-                      ),
-                    );
-                    _load();
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                      newStatus == 'inactive'
-                          ? AppColors.vermelho
-                          : AppColors.verde,
+            ),
+            if (isBanning) ...[
+              const SizedBox(height: 12),
+              TextField(
+                controller: reasonController,
+                maxLength: 200,
+                maxLines: 2,
+                decoration: const InputDecoration(
+                  labelText: 'Motivo (opcional)',
+                  hintText: 'Ex.: violação dos termos, spam...',
                 ),
-                child: Text(newStatus == 'inactive' ? 'Desativar' : 'Reativar'),
               ),
             ],
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar'),
           ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor:
+                  isBanning ? AppColors.vermelho : AppColors.verde,
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(isBanning ? 'Banir' : 'Desbanir'),
+          ),
+        ],
+      ),
     );
+    if (confirmed != true) return;
+
+    try {
+      final auth = context.read<AuthProvider>();
+      final adminName = auth.user?.displayName ?? 'Admin';
+      if (isBanning) {
+        await _service.banUser(
+          uid: user.uid,
+          adminUid: auth.user!.uid,
+          adminName: adminName,
+          reason: reasonController.text.trim().isEmpty
+              ? null
+              : reasonController.text.trim(),
+        );
+      } else {
+        await _service.unbanUser(
+          uid: user.uid,
+          adminUid: auth.user!.uid,
+          adminName: adminName,
+        );
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              isBanning ? 'Usuário banido.' : 'Usuário desbanido.',
+            ),
+          ),
+        );
+        _load();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro: $e')),
+        );
+      }
+    }
   }
 
   @override
@@ -324,6 +368,9 @@ class _UserTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isActive = user.status == 'active';
+    final isBanned = user.status == 'banned';
+    final isSuspended = user.status == 'suspended';
+    final isDeleted = user.status == 'deleted';
 
     return Opacity(
       opacity: isActive ? 1.0 : 0.5,
@@ -381,7 +428,13 @@ class _UserTile extends StatelessWidget {
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
-                  'Inativo',
+                  isBanned
+                      ? 'Banido'
+                      : isSuspended
+                          ? 'Suspenso'
+                          : isDeleted
+                              ? 'Excluído'
+                              : 'Inativo',
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
@@ -414,19 +467,20 @@ class _UserTile extends StatelessWidget {
                     ],
                   ),
                 ),
-                PopupMenuItem(
-                  value: 'status',
-                  child: Row(
-                    children: [
-                      Icon(
-                        isActive ? Icons.block : Icons.check_circle_outline,
-                        size: 18,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(isActive ? 'Desativar' : 'Reativar'),
-                    ],
+                if (!isDeleted)
+                  PopupMenuItem(
+                    value: 'status',
+                    child: Row(
+                      children: [
+                        Icon(
+                          isBanned ? Icons.check_circle_outline : Icons.block,
+                          size: 18,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(isBanned ? 'Desbanir' : 'Banir'),
+                      ],
+                    ),
                   ),
-                ),
               ],
         ),
       ),

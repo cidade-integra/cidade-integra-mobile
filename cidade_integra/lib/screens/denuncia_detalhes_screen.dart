@@ -9,6 +9,7 @@ import '../services/analytics_service.dart';
 import '../services/saved_reports_service.dart';
 import '../utils/app_theme.dart';
 import '../utils/refresh_scope.dart';
+import '../widgets/common/image_viewer.dart';
 import '../widgets/denuncias/comment_section.dart';
 import '../widgets/denuncias/mapa_denuncia.dart';
 import '../widgets/denuncias/status_badge.dart';
@@ -372,23 +373,35 @@ class _ImageGalleryState extends State<_ImageGallery> {
           child: PageView.builder(
             itemCount: widget.urls.length,
             onPageChanged: (i) => setState(() => _current = i),
-            itemBuilder:
-                (_, i) => Image.network(
-                  widget.urls[i],
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  errorBuilder:
-                      (_, __, ___) => Container(
-                        color: Colors.grey.shade200,
-                        child: const Center(
-                          child: Icon(
-                            Icons.broken_image,
-                            size: 48,
-                            color: Colors.grey,
-                          ),
+            itemBuilder: (_, i) {
+              final url = widget.urls[i];
+              final tag = 'report-image-$url';
+              return GestureDetector(
+                onTap: () => FullscreenImage.open(
+                  context,
+                  imageUrl: url,
+                  heroTag: tag,
+                ),
+                child: Hero(
+                  tag: tag,
+                  child: Image.network(
+                    url,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    errorBuilder: (_, __, ___) => Container(
+                      color: Colors.grey.shade200,
+                      child: const Center(
+                        child: Icon(
+                          Icons.broken_image,
+                          size: 48,
+                          color: Colors.grey,
                         ),
                       ),
+                    ),
+                  ),
                 ),
+              );
+            },
           ),
         ),
         if (widget.urls.length > 1)
