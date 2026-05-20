@@ -11,7 +11,9 @@ plugins {
 
 android {
     namespace = "com.example.cidade_integra"
-    compileSdk = flutter.compileSdkVersion
+    // flutter_secure_storage exige compileSdk >= 36 (Android 14 QPR / Android 15 SDK).
+    // Backward-compatible com targetSdk gerenciado pelo Flutter.
+    compileSdk = 36
     ndkVersion = "27.0.12077973"
 
     compileOptions {
