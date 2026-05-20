@@ -180,7 +180,11 @@ class _CommentSectionState extends State<CommentSection> {
     );
     if (confirm != true) return;
     try {
-      await _service.deleteComment(widget.reportId, c.id);
+      await _service.deleteComment(
+        widget.reportId,
+        c.id,
+        authorId: c.authorId,
+      );
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

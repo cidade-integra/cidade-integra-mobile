@@ -34,7 +34,30 @@ class CommentService {
     });
   }
 
-  Future<void> deleteComment(String reportId, String commentId) async {
-    await _commentsRef(reportId).doc(commentId).delete();
+  /// Apaga um comentário e devolve, se possível, os pontos que o autor
+  /// havia ganhado ao criá-lo (-2). Pulamos o decremento quando o autor
+  /// já foi anonimizado (`authorId == 'deleted'`) ou quando não temos o
+  /// ID — caso de comentários antigos sem o campo persistido.
+  Future<void> deleteComment(
+    String reportId,
+    String commentId, {
+    String? authorId,
+  }) async {
+    final ref = _commentsRef(reportId).doc(commentId);
+    final shouldRefundScore =
+        authorId != null && authorId.isNotEmpty && authorId != 'deleted';
+
+    if (!shouldRefundScore) {
+      await ref.delete();
+      return;
+    }
+
+    final batch = FirebaseFirestore.instance.batch();
+    batch.delete(ref);
+    batch.update(
+      FirebaseFirestore.instance.collection('users').doc(authorId),
+      {'score': FieldValue.increment(-2)},
+    );
+    await batch.commit();
   }
 }

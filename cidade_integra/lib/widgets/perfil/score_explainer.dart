@@ -63,6 +63,17 @@ class ScoreExplainer extends StatelessWidget {
             color: AppColors.textoSecundario,
           ),
         ),
+        const SizedBox(height: 6),
+        Text(
+          'Apagar um comentário ou ter uma denúncia ocultada devolve os '
+          'pontos correspondentes — assim a pontuação reflete sempre o '
+          'engajamento atual.',
+          style: TextStyle(
+            fontSize: 12,
+            fontStyle: FontStyle.italic,
+            color: AppColors.textoSecundario,
+          ),
+        ),
       ],
     );
   }
