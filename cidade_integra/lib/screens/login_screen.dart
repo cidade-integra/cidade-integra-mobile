@@ -140,8 +140,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 _StatusBanner(
                   message:
                       'Esta conta está desativada. Deseja reativá-la?',
-                  color: AppColors.azul,
-                  icon: Icons.info_outline,
+                  color: AppColors.verdeEscuro,
+                  icon: Icons.refresh,
                   actionLabel: 'Reativar',
                   onAction: () => _reactivate(auth.suspendedUid!),
                   onClose: () => auth.clearBlockedReason(),
