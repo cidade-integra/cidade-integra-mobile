@@ -63,6 +63,14 @@ service cloud.firestore {
       }
     }
 
+    // ── collectionGroup queries em "comments" ────────────────
+    // Necessária para PrivacyService.deleteAccount poder buscar
+    // todos os comentários do usuário em qualquer denúncia para
+    // anonimizá-los (LGPD).
+    match /{path=**}/comments/{commentId} {
+      allow read: if isAuth();
+    }
+
     // ── users ────────────────────────────────────────────────
     match /users/{userId} {
       allow read: if true;

@@ -190,7 +190,14 @@ class _EditFormState extends State<_EditForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    // Garante que a tela tenha altura mínima da viewport — assim o
+    // BaseLayout (que usa SingleChildScrollView) não deixa um vazio
+    // entre o form e o footer quando o conteúdo é curto.
+    final minHeight =
+        MediaQuery.of(context).size.height - kToolbarHeight - 200;
+    return ConstrainedBox(
+      constraints: BoxConstraints(minHeight: minHeight),
+      child: Column(
       children: [
         Container(
           width: double.infinity,
@@ -339,6 +346,7 @@ class _EditFormState extends State<_EditForm> {
           ),
         ),
       ],
+    ),
     );
   }
 }

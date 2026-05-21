@@ -11,8 +11,8 @@ class TeamMember {
     required this.role,
     required this.assetImage,
     required this.description,
-    required this.github,
-    required this.linkedin,
+    this.github = '',
+    this.linkedin = '',
   });
 }
 
@@ -71,5 +71,16 @@ const students = [
     github: 'https://github.com/VictorHugoTesti',
     linkedin:
         'https://www.linkedin.com/in/victor-hugo-malipense-testi-994297324/',
+  ),
+  TeamMember(
+    name: 'Luan Chierato',
+    role: 'Desenvolvedor',
+    assetImage: 'assets/images/luan-chierato.jpeg',
+    description:
+        'Meu nome é Luan e faço parte da equipe com muita dedicação e vontade de '
+        'crescer junto ao projeto. Sou muito grato pela forma acolhedora com que fui '
+        'recebido e por ter a oportunidade de contribuir com a equipe. Tenho certeza '
+        'de que essa experiência será muito importante para meu desenvolvimento e '
+        'espero agregar da melhor forma possível ao projeto.',
   ),
 ];

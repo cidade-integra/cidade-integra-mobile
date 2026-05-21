@@ -1,9 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../models/app_user.dart';
 import '../providers/auth_provider.dart';
-import '../services/user_service.dart';
 import '../utils/app_theme.dart';
 import '../utils/refresh_scope.dart';
 import '../widgets/perfil/badges_display.dart';
@@ -18,25 +18,12 @@ class PerfilScreen extends StatefulWidget {
 }
 
 class _PerfilScreenState extends State<PerfilScreen> {
-  Future<AppUser?>? _future;
-
   @override
   void initState() {
     super.initState();
-    RefreshScope.register(_refresh);
-    _scheduleLoad();
-  }
-
-  void _scheduleLoad() {
-    final auth = context.read<AuthProvider>();
-    if (auth.isLoggedIn) {
-      _future = UserService().getUserById(auth.user!.uid);
-    }
-  }
-
-  Future<void> _refresh() async {
-    setState(_scheduleLoad);
-    await _future;
+    // Pull-to-refresh continua disponível, mas como usamos snapshots()
+    // não precisa fazer nada além de notificar.
+    RefreshScope.register(() async {});
   }
 
   @override
@@ -50,10 +37,12 @@ class _PerfilScreenState extends State<PerfilScreen> {
       );
     }
 
-    _future ??= UserService().getUserById(auth.user!.uid);
+    final docRef = FirebaseFirestore.instance
+        .collection('users')
+        .doc(auth.user!.uid);
 
-    return FutureBuilder<AppUser?>(
-      future: _future,
+    return StreamBuilder<DocumentSnapshot>(
+      stream: docRef.snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const SizedBox(
@@ -62,15 +51,15 @@ class _PerfilScreenState extends State<PerfilScreen> {
           );
         }
 
-        final user = snapshot.data;
-        if (user == null) {
+        final doc = snapshot.data;
+        if (doc == null || !doc.exists) {
           return const SizedBox(
             height: 400,
             child: Center(child: Text('Usuário não encontrado.')),
           );
         }
 
-        return _ProfileContent(user: user);
+        return _ProfileContent(user: AppUser.fromFirestore(doc));
       },
     );
   }

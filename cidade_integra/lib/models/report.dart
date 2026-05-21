@@ -62,6 +62,12 @@ class Report {
   final String? hiddenBy;
   final String? hiddenReason;
 
+  /// UID real do autor — preenchido **mesmo** em denúncias anônimas para
+  /// que o admin consiga ajustar o score correto ao ocultar/restaurar e
+  /// para preservar a rastreabilidade interna. Continua sendo apenas
+  /// metadado de moderação: a UI nunca o expõe ao público.
+  final String? authorUid;
+
   const Report({
     required this.id,
     required this.title,
@@ -79,6 +85,7 @@ class Report {
     this.hiddenAt,
     this.hiddenBy,
     this.hiddenReason,
+    this.authorUid,
   });
 
   factory Report.fromFirestore(DocumentSnapshot doc) {
@@ -112,6 +119,7 @@ class Report {
           data['hiddenAt'] != null ? _toDateTime(data['hiddenAt']) : null,
       hiddenBy: data['hiddenBy'],
       hiddenReason: data['hiddenReason'],
+      authorUid: data['authorUid'],
     );
   }
 
@@ -122,6 +130,7 @@ class Report {
       'category': category.name,
       'isAnonymous': isAnonymous,
       'userId': isAnonymous ? null : userId,
+      'authorUid': authorUid,
       'location': location.toMap(),
       'imagemUrls': imageUrls,
       'status': status.name,

@@ -133,6 +133,10 @@ class AdminService {
     await batch.commit();
   }
 
+  /// Oculta a denúncia (soft-delete) e ajusta o **score** do autor — mas
+  /// preserva `reportCount`, que representa quantas denúncias o usuário
+  /// já criou (histórico imutável). O ajuste de score usa `authorUid`,
+  /// que existe inclusive em denúncias anônimas.
   Future<void> hideReportWithAudit({
     required String reportId,
     required String adminUid,
@@ -141,7 +145,9 @@ class AdminService {
   }) async {
     final reportSnap = await _reports.doc(reportId).get();
     final reportData = reportSnap.data();
-    final ownerId = reportData?['userId'] as String?;
+    final ownerId =
+        (reportData?['authorUid'] as String?) ??
+            (reportData?['userId'] as String?);
     final wasResolved = reportData?['status'] == 'resolved';
     final alreadyHidden = reportData?['isHidden'] == true;
 
@@ -158,7 +164,6 @@ class AdminService {
     if (!alreadyHidden && ownerId != null) {
       final scoreDelta = -10 + (wasResolved ? -20 : 0);
       batch.update(_users.doc(ownerId), {
-        'reportCount': FieldValue.increment(-1),
         'score': FieldValue.increment(scoreDelta),
       });
     }
@@ -184,7 +189,9 @@ class AdminService {
   }) async {
     final reportSnap = await _reports.doc(reportId).get();
     final reportData = reportSnap.data();
-    final ownerId = reportData?['userId'] as String?;
+    final ownerId =
+        (reportData?['authorUid'] as String?) ??
+            (reportData?['userId'] as String?);
     final wasResolved = reportData?['status'] == 'resolved';
     final wasHidden = reportData?['isHidden'] == true;
 
@@ -201,7 +208,6 @@ class AdminService {
     if (wasHidden && ownerId != null) {
       final scoreDelta = 10 + (wasResolved ? 20 : 0);
       batch.update(_users.doc(ownerId), {
-        'reportCount': FieldValue.increment(1),
         'score': FieldValue.increment(scoreDelta),
       });
     }

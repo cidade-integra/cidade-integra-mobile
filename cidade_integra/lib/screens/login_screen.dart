@@ -40,7 +40,10 @@ class _LoginScreenState extends State<LoginScreen> {
         password: _senhaController.text,
       );
       await AnalyticsService.logLogin('email');
-      if (mounted) context.go('/');
+      // Não chamamos context.go('/') aqui: o GoRouter redirect dispara
+      // automaticamente quando AuthProvider termina a checagem de status.
+      // Contas banidas/excluídas/suspensas permanecem em /login com o
+      // banner correspondente em vez de pular para a home brevemente.
     } on FirebaseAuthException catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
@@ -69,7 +72,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       await FirebaseAuth.instance.signInWithCredential(credential);
       await AnalyticsService.logLogin('google');
-      if (mounted) context.go('/');
+      // Idem ao login por e-mail: redirect via router.
     } on FirebaseAuthException catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
@@ -97,9 +100,10 @@ class _LoginScreenState extends State<LoginScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Conta reativada com sucesso!'),
+            backgroundColor: AppColors.verde,
           ),
         );
-        context.go('/');
+        // Router redireciona sozinho assim que isLoggedIn vira true.
       }
     } catch (e) {
       if (mounted) {

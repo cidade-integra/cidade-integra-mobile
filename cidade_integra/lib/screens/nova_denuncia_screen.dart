@@ -48,8 +48,17 @@ class _NovaDenunciaScreenState extends State<NovaDenunciaScreen> {
   }
 
   Future<void> _buscarCep() async {
-    if (!InputSanitizer.isValidCep(_cepController.text)) return;
-    final cep = _cepController.text.replaceAll(RegExp(r'\D'), '');
+    final raw = _cepController.text.trim();
+    if (raw.isEmpty) return;
+    if (!InputSanitizer.isValidCep(raw)) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('CEP inválido. Use o formato 00000-000.')),
+        );
+      }
+      return;
+    }
+    final cep = raw.replaceAll(RegExp(r'\D'), '');
 
     setState(() => _buscandoCep = true);
     try {
@@ -58,17 +67,48 @@ class _NovaDenunciaScreenState extends State<NovaDenunciaScreen> {
       );
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        if (data['erro'] != true && mounted) {
+        if (data['erro'] == true) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('CEP não encontrado.')),
+            );
+          }
+        } else if (mounted) {
           _enderecoController.text =
               '${data['logradouro']}, ${data['bairro']} - ${data['localidade']}/${data['uf']}';
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Endereço preenchido — revise se está correto.'),
+              backgroundColor: AppColors.verde,
+            ),
+          );
         }
       }
-    } catch (_) {}
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Não conseguimos buscar o CEP agora.')),
+        );
+      }
+    }
     if (mounted) setState(() => _buscandoCep = false);
   }
 
   Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Verifique os campos destacados em vermelho e tente novamente.',
+            ),
+            backgroundColor: AppColors.vermelho,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+      return;
+    }
 
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser != null && !currentUser.emailVerified) {
@@ -165,6 +205,7 @@ class _NovaDenunciaScreenState extends State<NovaDenunciaScreen> {
         ),
         isAnonymous: _isAnonima,
         userId: _isAnonima ? null : user?.uid,
+        authorUid: user?.uid,
         location: ReportLocation(
           address: endereco,
           postalCode: _cepController.text.replaceAll(RegExp(r'\D'), ''),
@@ -177,8 +218,41 @@ class _NovaDenunciaScreenState extends State<NovaDenunciaScreen> {
         updatedAt: DateTime.now(),
       );
 
-      await ReportService().createReport(report, authorUid: auth.user!.uid);
-      await AnalyticsService.logCreateReport(report.category.name);
+      String? createdId;
+      try {
+        createdId = await ReportService().createReport(
+          report,
+          authorUid: auth.user!.uid,
+        );
+      } on FirebaseException catch (e, stack) {
+        debugPrint('[NovaDenuncia] erro CREATE: ${e.code} ${e.message}');
+        debugPrintStack(stackTrace: stack);
+        if (mounted) {
+          _showError(
+            'Erro ao salvar no servidor. Tente novamente em instantes.',
+          );
+        }
+        return;
+      } on SocketException catch (e, stack) {
+        debugPrint('[NovaDenuncia] SocketException: $e');
+        debugPrintStack(stackTrace: stack);
+        if (mounted) {
+          _showError('Sem conexão com a internet. Verifique sua rede.');
+        }
+        return;
+      }
+
+      // A partir daqui a denúncia JÁ existe no banco — falhas em
+      // operações secundárias (analytics, etc.) nunca mostram erro
+      // ao usuário, apenas vão para os logs.
+      try {
+        await AnalyticsService.logCreateReport(report.category.name);
+      } catch (e, stack) {
+        debugPrint('[NovaDenuncia] analytics falhou: $e');
+        debugPrintStack(stackTrace: stack);
+      }
+
+      debugPrint('[NovaDenuncia] denúncia criada: $createdId');
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -189,22 +263,8 @@ class _NovaDenunciaScreenState extends State<NovaDenunciaScreen> {
         );
         context.go('/denuncias');
       }
-    } on FirebaseException catch (e, stack) {
-      debugPrint('[NovaDenuncia] FirebaseException: ${e.code} ${e.message}');
-      debugPrintStack(stackTrace: stack);
-      if (mounted) {
-        _showError(
-          'Erro ao salvar no servidor. Tente novamente em instantes.',
-        );
-      }
-    } on SocketException catch (e, stack) {
-      debugPrint('[NovaDenuncia] SocketException: $e');
-      debugPrintStack(stackTrace: stack);
-      if (mounted) {
-        _showError('Sem conexão com a internet. Verifique sua rede.');
-      }
     } catch (e, stack) {
-      debugPrint('[NovaDenuncia] Erro inesperado: $e');
+      debugPrint('[NovaDenuncia] Erro inesperado antes do create: $e');
       debugPrintStack(stackTrace: stack);
       if (mounted) {
         _showError('Não foi possível enviar a denúncia. Tente novamente.');
@@ -282,6 +342,7 @@ class _NovaDenunciaScreenState extends State<NovaDenunciaScreen> {
   Widget _buildForm() {
     return Form(
       key: _formKey,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -352,19 +413,29 @@ class _NovaDenunciaScreenState extends State<NovaDenunciaScreen> {
             decoration: InputDecoration(
               labelText: 'CEP (opcional)',
               hintText: '00000-000',
+              helperText:
+                  'Toque em "Buscar" para preencher o endereço automaticamente.',
               prefixIcon: const Icon(Icons.local_post_office_outlined),
               counterText: '',
-              suffixIcon:
-                  _buscandoCep
-                      ? const Padding(
-                        padding: EdgeInsets.all(12),
-                        child: SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                      )
-                      : null,
+              suffixIcon: _buscandoCep
+                  ? const Padding(
+                      padding: EdgeInsets.all(12),
+                      child: SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    )
+                  : TextButton.icon(
+                      onPressed: _buscarCep,
+                      icon: const Icon(Icons.search, size: 18),
+                      label: const Text('Buscar'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppColors.verde,
+                        padding:
+                            const EdgeInsets.symmetric(horizontal: 12),
+                      ),
+                    ),
             ),
             validator: (v) {
               if (v == null || v.trim().isEmpty) return null;

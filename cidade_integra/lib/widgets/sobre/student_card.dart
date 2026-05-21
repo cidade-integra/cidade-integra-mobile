@@ -56,26 +56,28 @@ class StudentCard extends StatelessWidget {
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 14),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                if (member.github.isNotEmpty)
-                  _SocialButton(
-                    icon: Icons.code,
-                    tooltip: 'GitHub',
-                    onTap: () => _open(member.github),
-                  ),
-                if (member.linkedin.isNotEmpty) ...[
-                  const SizedBox(width: 12),
-                  _SocialButton(
-                    icon: Icons.person,
-                    tooltip: 'LinkedIn',
-                    onTap: () => _open(member.linkedin),
-                  ),
+            if (member.github.isNotEmpty || member.linkedin.isNotEmpty) ...[
+              const SizedBox(height: 14),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (member.github.isNotEmpty)
+                    _SocialButton(
+                      icon: Icons.code,
+                      tooltip: 'GitHub',
+                      onTap: () => _open(member.github),
+                    ),
+                  if (member.github.isNotEmpty && member.linkedin.isNotEmpty)
+                    const SizedBox(width: 12),
+                  if (member.linkedin.isNotEmpty)
+                    _SocialButton(
+                      icon: Icons.person,
+                      tooltip: 'LinkedIn',
+                      onTap: () => _open(member.linkedin),
+                    ),
                 ],
-              ],
-            ),
+              ),
+            ],
           ],
         ),
       ),

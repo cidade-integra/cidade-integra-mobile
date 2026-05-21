@@ -15,18 +15,54 @@ class EmailVerificationBanner extends StatefulWidget {
 class _EmailVerificationBannerState extends State<EmailVerificationBanner> {
   bool _sending = false;
   bool _sent = false;
+  bool _checking = false;
+  bool _verifiedLocally = false;
 
   Future<void> _resend() async {
     setState(() => _sending = true);
     try {
       await FirebaseAuth.instance.currentUser?.sendEmailVerification();
-      if (mounted)
+      if (mounted) {
         setState(() {
           _sent = true;
           _sending = false;
         });
+      }
     } catch (_) {
       if (mounted) setState(() => _sending = false);
+    }
+  }
+
+  Future<void> _checkNow() async {
+    setState(() => _checking = true);
+    try {
+      await FirebaseAuth.instance.currentUser?.reload();
+      final verified =
+          FirebaseAuth.instance.currentUser?.emailVerified ?? false;
+      if (mounted) {
+        setState(() {
+          _checking = false;
+          _verifiedLocally = verified;
+        });
+        if (verified) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('E-mail verificado com sucesso!'),
+              backgroundColor: AppColors.verde,
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Ainda não verificamos. Confira sua caixa de entrada.',
+              ),
+            ),
+          );
+        }
+      }
+    } catch (_) {
+      if (mounted) setState(() => _checking = false);
     }
   }
 
@@ -36,7 +72,9 @@ class _EmailVerificationBannerState extends State<EmailVerificationBanner> {
     if (!auth.isLoggedIn) return const SizedBox.shrink();
 
     final user = FirebaseAuth.instance.currentUser;
-    if (user == null || user.emailVerified) return const SizedBox.shrink();
+    if (user == null || user.emailVerified || _verifiedLocally) {
+      return const SizedBox.shrink();
+    }
 
     return Container(
       width: double.infinity,
@@ -53,10 +91,14 @@ class _EmailVerificationBannerState extends State<EmailVerificationBanner> {
           Expanded(
             child: Text(
               _sent
-                  ? 'E-mail de verificação reenviado!'
+                  ? 'E-mail enviado! Após confirmar, toque em "Já verifiquei".'
                   : 'Verifique seu e-mail para liberar todas as funcionalidades.',
               style: const TextStyle(fontSize: 13),
             ),
+          ),
+          TextButton(
+            onPressed: _checking ? null : _checkNow,
+            child: Text(_checking ? 'Conferindo...' : 'Já verifiquei'),
           ),
           if (!_sent)
             TextButton(

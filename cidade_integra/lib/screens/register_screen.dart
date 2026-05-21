@@ -36,7 +36,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Future<void> _registrar() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Verifique os campos destacados em vermelho.',
+            ),
+            backgroundColor: AppColors.vermelho,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+      return;
+    }
 
     if (!_aceitouTermos) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -204,6 +217,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ),
       child: Form(
         key: _formKey,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
