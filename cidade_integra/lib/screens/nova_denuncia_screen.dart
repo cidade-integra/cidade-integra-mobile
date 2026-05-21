@@ -53,7 +53,9 @@ class _NovaDenunciaScreenState extends State<NovaDenunciaScreen> {
     if (!InputSanitizer.isValidCep(raw)) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('CEP inválido. Use o formato 00000-000.')),
+          const SnackBar(
+            content: Text('CEP inválido. Use o formato 00000-000.'),
+          ),
         );
       }
       return;
@@ -65,24 +67,75 @@ class _NovaDenunciaScreenState extends State<NovaDenunciaScreen> {
       final response = await http.get(
         Uri.parse('https://viacep.com.br/ws/$cep/json/'),
       );
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        if (data['erro'] == true) {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('CEP não encontrado.')),
-            );
-          }
-        } else if (mounted) {
-          _enderecoController.text =
-              '${data['logradouro']}, ${data['bairro']} - ${data['localidade']}/${data['uf']}';
+
+      if (response.statusCode != 200) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('CEP não encontrado.')),
+          );
+        }
+        return;
+      }
+
+      final data = jsonDecode(response.body);
+      // ViaCEP pode devolver `erro` como bool (true) ou string ("true").
+      final hasError = data is Map &&
+          (data['erro'] == true || data['erro'] == 'true');
+
+      if (hasError || data is! Map) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('CEP não encontrado.')),
+          );
+        }
+        return;
+      }
+
+      String safe(dynamic value) {
+        if (value is String) return value.trim();
+        return '';
+      }
+
+      final logradouro = safe(data['logradouro']);
+      final bairro = safe(data['bairro']);
+      final localidade = safe(data['localidade']);
+      final uf = safe(data['uf']);
+
+      final partesRua = <String>[
+        if (logradouro.isNotEmpty) logradouro,
+        if (bairro.isNotEmpty) bairro,
+      ];
+      final cidadeUf = [
+        if (localidade.isNotEmpty) localidade,
+        if (uf.isNotEmpty) uf,
+      ].join('/');
+      final endereco = [
+        partesRua.join(', '),
+        cidadeUf,
+      ].where((s) => s.isNotEmpty).join(' - ');
+
+      if (endereco.isEmpty) {
+        if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Endereço preenchido — revise se está correto.'),
-              backgroundColor: AppColors.verde,
+              content: Text(
+                'CEP encontrado, mas sem endereço associado. '
+                'Preencha manualmente.',
+              ),
             ),
           );
         }
+        return;
+      }
+
+      if (mounted) {
+        _enderecoController.text = endereco;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Endereço preenchido — revise se está correto.'),
+            backgroundColor: AppColors.verde,
+          ),
+        );
       }
     } catch (_) {
       if (mounted) {
@@ -90,8 +143,9 @@ class _NovaDenunciaScreenState extends State<NovaDenunciaScreen> {
           const SnackBar(content: Text('Não conseguimos buscar o CEP agora.')),
         );
       }
+    } finally {
+      if (mounted) setState(() => _buscandoCep = false);
     }
-    if (mounted) setState(() => _buscandoCep = false);
   }
 
   Future<void> _submit() async {

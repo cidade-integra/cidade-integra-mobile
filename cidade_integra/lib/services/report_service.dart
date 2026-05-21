@@ -85,13 +85,13 @@ class ReportService {
         'isAnonymous': report.isAnonymous,
       });
 
-      // Score sempre cresce — anônima ou não, foi contribuição real.
-      // reportCount só cresce em denúncias identificadas, para não
-      // revelar autoria via contagem.
+      // Tanto reportCount quanto score crescem em qualquer denúncia
+      // criada por usuário autenticado — inclusive as anônimas. O perfil
+      // mostra a contribuição total da pessoa.
       try {
         await users.doc(uid).update({
           'score': FieldValue.increment(10),
-          if (!report.isAnonymous) 'reportCount': FieldValue.increment(1),
+          'reportCount': FieldValue.increment(1),
         });
       } catch (_) {
         // Falha de update no perfil não invalida a denúncia já criada.
