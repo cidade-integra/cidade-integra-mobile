@@ -74,7 +74,7 @@ const students = [
   ),
   TeamMember(
     name: 'Luan Chierato',
-    role: 'Desenvolvedor',
+    role: 'QA Tester',
     assetImage: 'assets/images/luan-chierato.jpeg',
     description:
         'Meu nome é Luan e faço parte da equipe com muita dedicação e vontade de '
