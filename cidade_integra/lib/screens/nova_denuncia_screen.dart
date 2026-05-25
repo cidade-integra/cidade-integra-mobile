@@ -101,18 +101,15 @@ class _NovaDenunciaScreenState extends State<NovaDenunciaScreen> {
       final localidade = safe(data['localidade']);
       final uf = safe(data['uf']);
 
-      final partesRua = <String>[
+      // Formato: "Rua X, Bairro, Cidade, UF" — separadores consistentes
+      // com vírgula tornam o geocoding (Nominatim) muito mais preciso.
+      final partes = <String>[
         if (logradouro.isNotEmpty) logradouro,
         if (bairro.isNotEmpty) bairro,
-      ];
-      final cidadeUf = [
         if (localidade.isNotEmpty) localidade,
         if (uf.isNotEmpty) uf,
-      ].join('/');
-      final endereco = [
-        partesRua.join(', '),
-        cidadeUf,
-      ].where((s) => s.isNotEmpty).join(' - ');
+      ];
+      final endereco = partes.join(', ');
 
       if (endereco.isEmpty) {
         if (mounted) {
