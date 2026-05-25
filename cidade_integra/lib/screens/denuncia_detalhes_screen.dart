@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -285,13 +286,7 @@ class _DetailContentState extends State<_DetailContent> {
                   icon: Icons.calendar_today_outlined,
                   label: dateFormat.format(report.createdAt),
                 ),
-                _InfoItem(
-                  icon: Icons.person_outline,
-                  label:
-                      report.isAnonymous
-                          ? 'Denúncia anônima'
-                          : 'Reportado por cidadão',
-                ),
+                _ReporterRow(report: report),
                 if (report.resolvedAt != null)
                   _InfoItem(
                     icon: Icons.check_circle_outline,
@@ -489,6 +484,52 @@ class _ErrorState extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _ReporterRow extends StatelessWidget {
+  final Report report;
+  const _ReporterRow({required this.report});
+
+  String _firstName(String fullName) {
+    final cleaned = fullName.trim();
+    if (cleaned.isEmpty) return '';
+    return cleaned.split(RegExp(r'\s+')).first;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (report.isAnonymous) {
+      return const _InfoItem(
+        icon: Icons.person_outline,
+        label: 'Denúncia anônima',
+      );
+    }
+
+    final uid = report.userId ?? report.authorUid;
+    if (uid == null) {
+      return const _InfoItem(
+        icon: Icons.person_outline,
+        label: 'Reportado por cidadão',
+      );
+    }
+
+    return FutureBuilder<DocumentSnapshot>(
+      future: FirebaseFirestore.instance.collection('users').doc(uid).get(),
+      builder: (context, snap) {
+        String label = 'Reportado por cidadão';
+        if (snap.hasData && snap.data!.exists) {
+          final data = snap.data!.data() as Map<String, dynamic>?;
+          final display =
+              (data?['displayName'] as String?)?.trim() ?? '';
+          final firstName = _firstName(display);
+          if (firstName.isNotEmpty) {
+            label = 'Reportado por $firstName';
+          }
+        }
+        return _InfoItem(icon: Icons.person_outline, label: label);
+      },
     );
   }
 }

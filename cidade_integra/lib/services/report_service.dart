@@ -29,26 +29,58 @@ class ReportService {
     return reports.where((r) => !r.isHidden).toList();
   }
 
-  /// Lista todas as denúncias do usuário — inclusive as anônimas, que
-  /// têm `userId: null` no documento público mas são indexadas em
-  /// `users/{uid}/meusReports` (subcoleção privada).
+  /// Lista todas as denúncias do usuário — inclusive as anônimas — usando
+  /// `authorUid` (que sempre é preenchido na criação, mesmo em anônimas).
+  /// Mais robusto que depender só da subcoleção `meusReports`, que pode
+  /// não ter sido populada em versões antigas.
   Future<List<Report>> getReportsByUser(
     String userId, {
     bool includeHidden = false,
   }) async {
-    final users = FirebaseFirestore.instance.collection('users');
-    final indexSnap = await users
-        .doc(userId)
-        .collection('meusReports')
-        .orderBy('createdAt', descending: true)
-        .get();
-    final ids = indexSnap.docs.map((d) => d.id).toList();
-
+    final ids = <String>{};
     final reports = <Report>[];
-    for (final id in ids) {
-      final doc = await _collection.doc(id).get();
-      if (doc.exists) reports.add(Report.fromFirestore(doc));
-    }
+
+    // Fonte 1: query direta por authorUid (cobre denúncias novas e
+    // antigas não-anônimas).
+    try {
+      final snap = await _collection
+          .where('authorUid', isEqualTo: userId)
+          .get();
+      for (final doc in snap.docs) {
+        if (ids.add(doc.id)) reports.add(Report.fromFirestore(doc));
+      }
+    } catch (_) {}
+
+    // Fonte 2: denúncias antigas sem `authorUid` (não-anônimas) ainda
+    // expõem `userId`.
+    try {
+      final snap = await _collection
+          .where('userId', isEqualTo: userId)
+          .get();
+      for (final doc in snap.docs) {
+        if (ids.add(doc.id)) reports.add(Report.fromFirestore(doc));
+      }
+    } catch (_) {}
+
+    // Fonte 3: índice privado `users/{uid}/meusReports` (mantido por
+    // compatibilidade com versões anteriores).
+    try {
+      final users = FirebaseFirestore.instance.collection('users');
+      final indexSnap = await users
+          .doc(userId)
+          .collection('meusReports')
+          .get();
+      for (final indexDoc in indexSnap.docs) {
+        if (ids.contains(indexDoc.id)) continue;
+        final doc = await _collection.doc(indexDoc.id).get();
+        if (doc.exists) {
+          ids.add(doc.id);
+          reports.add(Report.fromFirestore(doc));
+        }
+      }
+    } catch (_) {}
+
+    reports.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
     if (includeHidden) return reports;
     return reports.where((r) => !r.isHidden).toList();
@@ -78,24 +110,29 @@ class ReportService {
     final docRef = await _collection.add(data);
     final uid = authorUid ?? report.userId;
 
+    // A partir daqui as operações são auxiliares: cada uma vai num
+    // try-catch isolado para que NUNCA propaguem erro ao chamador — a
+    // denúncia já foi criada com sucesso e o usuário não deve ver
+    // "erro de servidor" por causa de uma escrita secundária.
     if (uid != null) {
       final users = FirebaseFirestore.instance.collection('users');
-      await users.doc(uid).collection('meusReports').doc(docRef.id).set({
-        'createdAt': FieldValue.serverTimestamp(),
-        'isAnonymous': report.isAnonymous,
-      });
 
-      // Tanto reportCount quanto score crescem em qualquer denúncia
-      // criada por usuário autenticado — inclusive as anônimas. O perfil
-      // mostra a contribuição total da pessoa.
       try {
-        await users.doc(uid).update({
+        await users.doc(uid).collection('meusReports').doc(docRef.id).set({
+          'createdAt': FieldValue.serverTimestamp(),
+          'isAnonymous': report.isAnonymous,
+        });
+      } catch (_) {}
+
+      // Score e reportCount sobem em qualquer denúncia autenticada.
+      // Usamos `set(merge:true)` para criar o doc do usuário caso
+      // ainda não exista (race condition em logins muito novos).
+      try {
+        await users.doc(uid).set({
           'score': FieldValue.increment(10),
           'reportCount': FieldValue.increment(1),
-        });
-      } catch (_) {
-        // Falha de update no perfil não invalida a denúncia já criada.
-      }
+        }, SetOptions(merge: true));
+      } catch (_) {}
     }
 
     return docRef.id;

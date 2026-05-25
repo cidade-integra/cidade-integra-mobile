@@ -130,7 +130,9 @@ class _ProfileContent extends StatelessWidget {
           ),
         ),
 
-        // Estatísticas
+        // Estatísticas — exibe sempre >= 0; contadores eventualmente
+        // negativos (estados legados de versões anteriores) são
+        // saneados na próxima criação de denúncia.
         Padding(
           padding: const EdgeInsets.all(16),
           child: Row(
@@ -139,7 +141,7 @@ class _ProfileContent extends StatelessWidget {
                 child: _StatCard(
                   icon: Icons.campaign_outlined,
                   label: 'Denúncias',
-                  value: '${user.reportCount}',
+                  value: '${user.reportCount < 0 ? 0 : user.reportCount}',
                   color: AppColors.verde,
                 ),
               ),
@@ -148,7 +150,7 @@ class _ProfileContent extends StatelessWidget {
                 child: _StatCard(
                   icon: Icons.star_outline,
                   label: 'Score',
-                  value: '${user.score}',
+                  value: '${user.score < 0 ? 0 : user.score}',
                   color: const Color(0xFFF39C12),
                 ),
               ),
