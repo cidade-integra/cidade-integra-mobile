@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 import '../models/report.dart';
 import '../providers/auth_provider.dart';
 import '../services/report_service.dart';
@@ -142,6 +143,38 @@ class _DetailContentState extends State<_DetailContent> {
     }
   }
 
+  Future<void> _shareReport() async {
+    final r = widget.report;
+    final buffer = StringBuffer()
+      ..writeln('📍 ${r.title}')
+      ..writeln()
+      ..writeln('Categoria: ${r.category.label}')
+      ..writeln('Status: ${r.status.label}');
+    if (r.location.address.isNotEmpty) {
+      buffer.writeln('Local: ${r.location.address}');
+    }
+    buffer
+      ..writeln()
+      ..writeln(r.description)
+      ..writeln()
+      ..writeln('—')
+      ..writeln('Reportado via app Cidade Integra.');
+
+    try {
+      await SharePlus.instance.share(
+        ShareParams(text: buffer.toString(), subject: r.title),
+      );
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Não foi possível abrir o compartilhamento.'),
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final report = widget.report;
@@ -182,6 +215,11 @@ class _DetailContentState extends State<_DetailContent> {
                     ),
                   ),
                   const Spacer(),
+                  IconButton(
+                    icon: const Icon(Icons.share_outlined, color: Colors.white),
+                    tooltip: 'Compartilhar',
+                    onPressed: _shareReport,
+                  ),
                   if (!_checkingSaved)
                     IconButton(
                       icon: Icon(
