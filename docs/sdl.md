@@ -6,6 +6,19 @@
 
 ---
 
+## Equipe
+
+| Integrante | Função |
+|------------|--------|
+| Jeronimo Barbieri | Designer UI/UX |
+| Rafael Romano Silva | Gestor de Projeto |
+| Miguel Morandini | Desenvolvedor FullStack |
+| Pedro Ferreira Leite | Designer UI/UX |
+| Victor Hugo Testi | Desenvolvedor FullStack |
+| Luan Chierato | QA Tester |
+
+---
+
 ## Fase 1 — Requisitos
 
 ### 1.1 Requisitos Funcionais
